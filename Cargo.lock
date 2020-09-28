@@ -113,6 +113,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "macroquad-tiled"
+version = "0.1.0"
+source = "git+https://github.com/not-fl3/macroquad?branch=0.3#40d0e4af284721d8d79781eee38fc1bc1c79e966"
+dependencies = [
+ "macroquad",
+ "nanoserde",
+]
+
+[[package]]
 name = "macroquad_macro"
 version = "0.1.0"
 source = "git+https://github.com/not-fl3/macroquad?branch=0.3#40d0e4af284721d8d79781eee38fc1bc1c79e966"
@@ -148,6 +157,21 @@ checksum = "3223bd0dbc43a241228209464f995a7a6a86d64865459a8f1b8870890c6caea7"
 dependencies = [
  "rusttype 0.7.9",
 ]
+
+[[package]]
+name = "nanoserde"
+version = "0.1.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f28fd3beeb39ed991b142c94dbaff19d194041cdc9db715af2c72b22b00d25c"
+dependencies = [
+ "nanoserde-derive",
+]
+
+[[package]]
+name = "nanoserde-derive"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e0d42774fb555d1dc23a985b52975fb39b4f1b53f26389389a926c49001c3b1"
 
 [[package]]
 name = "num-integer"
@@ -233,6 +257,7 @@ name = "rpg-explore"
 version = "0.1.0"
 dependencies = [
  "macroquad",
+ "macroquad-tiled",
  "miniquad",
 ]
 

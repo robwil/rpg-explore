@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 macroquad = { git = "https://github.com/not-fl3/macroquad", branch = "0.3" }
+macroquad-tiled = { git = "https://github.com/not-fl3/macroquad", branch = "0.3" }
 miniquad = "0.3.0-alpha.13"
