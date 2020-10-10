@@ -23,13 +23,36 @@ async fn main() {
             ("cave16x16.png", texture_atlas),
         ],
     ).expect("failed to load map");
+    let map_height = map.raw_tiled_map.height as f32;
+    let map_width = map.raw_tiled_map.width as f32;
 
+    let screen_rect = Rect::new(0., 0., screen_width(), screen_height());
+    let mut map_x = 0.;
+    let mut map_y = 0.;
     loop {
         clear_background(BLACK);
-        let dest_rect = Rect::new(0., 0., screen_width(), screen_height());
+        
         // note: this renders the top-left 16x16 portion of our map
-        let source_rect = Rect::new(0., 0., 15., 15.);
-        map.draw_tiles("Tile Layer 1", dest_rect, source_rect);
+        // and allows the camera to move with arrow keys
+        let camera_rect = Rect::new(map_x, map_y, 15., 15.);
+        map.draw_tiles("Tile Layer 1", screen_rect, camera_rect);
+
+        if is_key_down(KeyCode::Left) && map_x > 0. {
+            map_x -= 1.;
+        }
+
+        if is_key_down(KeyCode::Right) && map_x < map_width-16. {
+            map_x += 1.;
+        }
+
+        if is_key_down(KeyCode::Up) && map_y > 0. {
+            map_y -= 1.;
+        }
+
+        if is_key_down(KeyCode::Down) && map_y < map_height-16. {
+            map_y += 1.;
+        }
+
         next_frame().await;
     }
 
