@@ -32,13 +32,16 @@ impl<'a> System<'a> for InputSystem {
                 let mut moving = false;
                 let new_x = position.x + delta_x;
                 let new_y = position.y + delta_y;
-                println!("current position = {:?}", *position);
-                if new_x >= 0. && new_x < map.width {
+                println!("current position = {:?}, trying new position = {},{}", *position, new_x, new_y);
+                // ensure they don't leave map
+                if new_x >= 0. && new_x < map.width && new_y >= 0. && new_y < map.height {
                     moving = true;
                 }
-                if new_y >= 0. && new_y < map.height {
-                    moving = true;
+                // check if the new location is actually somewhere we can move
+                if map.is_blocked(new_x, new_y) {
+                    moving = false;
                 }
+                // perform actual move (passes off to Player Moving System for animation and actual position change)
                 if moving {
                     *game_state = GameState::PlayerMoving { delta_x, delta_y };
                 }
