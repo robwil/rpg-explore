@@ -1,8 +1,10 @@
 use crate::components::GridPosition;
 use crate::components::Player;
 use crate::components::SpriteDrawable;
+use crate::game_states::GameState;
 use crate::map::GameMap;
 use crate::systems::InputSystem;
+use crate::systems::PlayerMovingSystem;
 use crate::systems::RenderingSystem;
 use macroquad::*;
 use specs::RunNow;
@@ -10,6 +12,7 @@ use specs::{Builder, World, WorldExt};
 
 mod components;
 mod constants;
+mod game_states;
 mod map;
 mod systems;
 
@@ -32,6 +35,7 @@ async fn main() {
 
     let map = GameMap::new().await;
     world.insert(map);
+    world.insert(GameState::AwaitingInput);
 
     // Create entities
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
@@ -48,13 +52,21 @@ async fn main() {
         })
         .build();
 
+    let mut rendering_system = RenderingSystem {
+        ..Default::default()
+    };
+
     loop {
         clear_background(BLACK);
 
         let mut input_system = InputSystem {};
         input_system.run_now(&world);
-        let mut rendering_system = RenderingSystem {};
+
+        let mut player_moving_system = PlayerMovingSystem {};
+        player_moving_system.run_now(&world);
+
         rendering_system.run_now(&world);
+
         world.maintain();
 
         next_frame().await;

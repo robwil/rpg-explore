@@ -1,57 +1,70 @@
 use crate::components::GridPosition;
 use crate::components::Player;
+use crate::game_states::GameState;
 use crate::map::GameMap;
-use macroquad::is_key_pressed;
+use macroquad::is_key_down;
 use miniquad::KeyCode;
 use specs::Join;
 use specs::ReadExpect;
 use specs::ReadStorage;
 use specs::System;
-use specs::WriteStorage;
+use specs::WriteExpect;
 
 pub struct InputSystem;
 
 impl<'a> System<'a> for InputSystem {
     type SystemData = (
         ReadExpect<'a, GameMap>,
+        WriteExpect<'a, GameState>,
         ReadStorage<'a, Player>,
-        WriteStorage<'a, GridPosition>,
+        ReadStorage<'a, GridPosition>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let try_move_player = |data: Self::SystemData, delta_x: f32, delta_y: f32| {
-            let (map, players, mut positions) = data;
-            for (_player, position) in (&players, &mut positions).join() {
+        let (map, mut game_state, players, positions) = data;
+
+        if *game_state != GameState::AwaitingInput {
+            return;
+        }
+
+        let mut try_move_player = |delta_x: f32, delta_y: f32| {
+            for (_player, position) in (&players, &positions).join() {
+                let mut moving = false;
                 let new_x = position.x + delta_x;
-                if new_x >= 0. && new_x < map.width {
-                    // -1 ?
-                    position.x = new_x;
-                }
                 let new_y = position.y + delta_y;
+                println!("current position = {:?}", *position);
+                if new_x >= 0. && new_x < map.width {
+                    moving = true;
+                }
                 if new_y >= 0. && new_y < map.height {
-                    // -1?
-                    position.y = new_y;
+                    moving = true;
+                }
+                if moving {
+                    *game_state = GameState::PlayerMoving { delta_x, delta_y };
                 }
             }
         };
 
         let mut delta_x = 0.;
         let mut delta_y = 0.;
-        if is_key_pressed(KeyCode::Left) {
+        if is_key_down(KeyCode::Left) {
             delta_x -= 1.;
         }
 
-        if is_key_pressed(KeyCode::Right) {
+        if is_key_down(KeyCode::Right) {
             delta_x += 1.;
         }
 
-        if is_key_pressed(KeyCode::Up) {
+        if is_key_down(KeyCode::Up) {
             delta_y -= 1.;
         }
 
-        if is_key_pressed(KeyCode::Down) {
+        if is_key_down(KeyCode::Down) {
             delta_y += 1.;
         }
-        try_move_player(data, delta_x, delta_y);
+
+        if delta_x != 0. || delta_y != 0. {
+            try_move_player(delta_x, delta_y);
+        }
     }
 }

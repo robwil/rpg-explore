@@ -6,7 +6,10 @@ use crate::constants::GLOBAL_OFFSET_Y;
 use crate::constants::LEVEL_HEIGHT;
 use crate::constants::LEVEL_WIDTH;
 use crate::map::GameMap;
+use macroquad::draw_text;
 use macroquad::draw_texture_ex;
+use macroquad::get_frame_time;
+use macroquad::get_time;
 use macroquad::DrawTextureParams;
 use macroquad::Rect;
 use macroquad::Vec2;
@@ -15,7 +18,11 @@ use specs::Join;
 use specs::ReadExpect;
 use specs::{ReadStorage, System};
 
-pub struct RenderingSystem;
+#[derive(Default)]
+pub struct RenderingSystem {
+    pub last_fps: f32,
+    pub last_fps_time: f64,
+}
 
 impl<'a> System<'a> for RenderingSystem {
     type SystemData = (
@@ -26,6 +33,13 @@ impl<'a> System<'a> for RenderingSystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (map, positions, drawables) = data;
+
+        // draw FPS
+        if get_time() > self.last_fps_time + 0.2 {
+            self.last_fps = (1. / get_frame_time()).round();
+            self.last_fps_time = get_time();
+        }
+        draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 20.0, WHITE);
 
         // draw map
         let level_rect = Rect::new(0., 0., LEVEL_WIDTH - 1., LEVEL_HEIGHT - 1.);
