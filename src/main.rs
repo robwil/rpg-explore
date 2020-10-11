@@ -42,7 +42,7 @@ async fn main() {
     world
         .create_entity()
         .with(Player {})
-        .with(GridPosition { x: 10., y: 2. })
+        .with(GridPosition { x: 9., y: 3. })
         .with(SpriteDrawable {
             texture: character_texture,
             tile_width: 16.,

@@ -25,6 +25,7 @@ impl GameMap {
             .expect("failed to load map");
         let map_height = map.raw_tiled_map.height as f32;
         let map_width = map.raw_tiled_map.width as f32;
+        println!("map height {} and width {}", map_height, map_width);
         GameMap {
             map,
             width: map_width,
@@ -36,6 +37,7 @@ impl GameMap {
 
     pub fn is_blocked(&self, grid_x: f32, grid_y: f32) -> bool {
         // check the collision layer of the map to see if x/y should be considered blocked
-        self.map.get_tile("collision", grid_x as u32, grid_y as u32).as_ref().is_some()
+        // TODO: right now this hard-codes the 'layer' 1 collision, but in the future we could pass in the Player's current layer (e.g. if we have multi-level maps with ladders and such)
+        self.map.get_tile("collision1", grid_x as u32, grid_y as u32).as_ref().is_some()
     }
 }

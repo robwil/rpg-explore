@@ -42,6 +42,8 @@ impl<'a> System<'a> for RenderingSystem {
         draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 20.0, WHITE);
 
         // draw map
+        // TODO: instead of constants for the LEVEL_WIDTH/HEIGHT, and hard-coding tilelayer1/tilelayer2,
+        //       we could extract the concept of a Level and store these things.
         let level_rect = Rect::new(0., 0., LEVEL_WIDTH - 1., LEVEL_HEIGHT - 1.);
         let draw_dest_rect = Rect::new(
             GLOBAL_OFFSET_X,
@@ -50,7 +52,9 @@ impl<'a> System<'a> for RenderingSystem {
             map.tile_height * map.height * GLOBAL_MULTIPLIER,
         );
         map.map
-            .draw_tiles("Tile Layer 1", draw_dest_rect, level_rect);
+            .draw_tiles("tilelayer1", draw_dest_rect, level_rect);
+        map.map
+            .draw_tiles("decoration1", draw_dest_rect, level_rect);
 
         // draw any SpriteDrawables with GridPosition
         for (drawable, position) in (&drawables, &positions).join() {
@@ -79,5 +83,11 @@ impl<'a> System<'a> for RenderingSystem {
                 },
             );
         }
+
+        // draw map's "foreground" layer on top of sprites, to simulate depth
+        map.map
+            .draw_tiles("tilelayer2", draw_dest_rect, level_rect);
+        map.map
+            .draw_tiles("decoration2", draw_dest_rect, level_rect);
     }
 }
