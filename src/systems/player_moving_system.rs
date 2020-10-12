@@ -52,7 +52,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                     // perform actual move (will be handled below)
                     if moving {
                         *game_state = GameState::PlayerMoving { delta_x: *delta_x, delta_y: *delta_y };
-                        new_events.push(Event::PlayerLeft(*position));
+                        new_events.push(Event::PlayerExit(*position));
                     }
                 }
             }

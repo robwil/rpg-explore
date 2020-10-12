@@ -1,3 +1,7 @@
+use crate::systems::ActionSystem;
+use crate::components::TriggerActionOnExit;
+use crate::actions::Action;
+use crate::components::TriggerActionOnEnter;
 use crate::events::EventQueue;
 use crate::components::GridPosition;
 use crate::components::Player;
@@ -11,6 +15,7 @@ use macroquad::*;
 use specs::RunNow;
 use specs::{Builder, World, WorldExt};
 
+mod actions;
 mod components;
 mod constants;
 mod events;
@@ -34,6 +39,8 @@ async fn main() {
     world.register::<GridPosition>();
     world.register::<SpriteDrawable>();
     world.register::<Player>();
+    world.register::<TriggerActionOnEnter>();
+    world.register::<TriggerActionOnExit>();
 
     // Insert global resources
     let map = GameMap::new().await;
@@ -55,6 +62,18 @@ async fn main() {
             current_frame: 8.,
         })
         .build();
+    // Top door
+    world
+        .create_entity()
+        .with(GridPosition {x: 11., y: 2. })
+        .with(TriggerActionOnEnter { action: Action::Teleport(GridPosition{x: 10., y: 11. })})
+        .build();
+    // Bottom door
+    world
+        .create_entity()
+        .with(GridPosition {x: 10., y: 12. })
+        .with(TriggerActionOnEnter { action: Action::Teleport(GridPosition{x: 11., y: 3. })})
+        .build();
 
     let mut rendering_system = RenderingSystem {
         ..Default::default()
@@ -68,6 +87,9 @@ async fn main() {
 
         let mut player_moving_system = PlayerMovingSystem {};
         player_moving_system.run_now(&world);
+
+        let mut action_system = ActionSystem {};
+        action_system.run_now(&world);
 
         rendering_system.run_now(&world);
 

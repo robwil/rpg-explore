@@ -9,7 +9,7 @@ pub enum Event {
     PlayerTriesUse(GridPosition),
 
     // Fired when player successfully leaves a tile position
-    PlayerLeft(GridPosition),
+    PlayerExit(GridPosition),
     
     // Fired when player successfully enters a tile position
     PlayerEntered(GridPosition),
