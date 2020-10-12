@@ -1,3 +1,4 @@
+use crate::events::EventQueue;
 use crate::components::GridPosition;
 use crate::components::Player;
 use crate::components::SpriteDrawable;
@@ -12,6 +13,7 @@ use specs::{Builder, World, WorldExt};
 
 mod components;
 mod constants;
+mod events;
 mod game_states;
 mod map;
 mod systems;
@@ -33,9 +35,11 @@ async fn main() {
     world.register::<SpriteDrawable>();
     world.register::<Player>();
 
+    // Insert global resources
     let map = GameMap::new().await;
     world.insert(map);
     world.insert(GameState::AwaitingInput);
+    world.insert(EventQueue{..Default::default()});
 
     // Create entities
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
@@ -68,6 +72,16 @@ async fn main() {
         rendering_system.run_now(&world);
 
         world.maintain();
+
+        let mut event_queue = world.write_resource::<EventQueue>();
+        if !event_queue.events.is_empty() {
+            println!("current events: {:?}", event_queue.events);
+        }
+        if !event_queue.new_events.is_empty() {
+            println!("new events: {:?}", event_queue.new_events);
+        }
+        event_queue.events = (*event_queue.new_events).to_vec();
+        event_queue.new_events.clear();
 
         next_frame().await;
     }

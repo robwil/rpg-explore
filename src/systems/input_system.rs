@@ -1,12 +1,9 @@
-use crate::components::GridPosition;
-use crate::components::Player;
+use crate::events::Event;
+use crate::EventQueue;
 use crate::game_states::GameState;
-use crate::map::GameMap;
 use macroquad::is_key_down;
 use miniquad::KeyCode;
-use specs::Join;
 use specs::ReadExpect;
-use specs::ReadStorage;
 use specs::System;
 use specs::WriteExpect;
 
@@ -14,39 +11,16 @@ pub struct InputSystem;
 
 impl<'a> System<'a> for InputSystem {
     type SystemData = (
-        ReadExpect<'a, GameMap>,
-        WriteExpect<'a, GameState>,
-        ReadStorage<'a, Player>,
-        ReadStorage<'a, GridPosition>,
+        WriteExpect<'a, EventQueue>,
+        ReadExpect<'a, GameState>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (map, mut game_state, players, positions) = data;
+        let (mut event_queue, game_state) = data;
 
         if *game_state != GameState::AwaitingInput {
             return;
         }
-
-        let mut try_move_player = |delta_x: f32, delta_y: f32| {
-            for (_player, position) in (&players, &positions).join() {
-                let mut moving = false;
-                let new_x = position.x + delta_x;
-                let new_y = position.y + delta_y;
-                println!("current position = {:?}, trying new position = {},{}", *position, new_x, new_y);
-                // ensure they don't leave map
-                if new_x >= 0. && new_x < map.width && new_y >= 0. && new_y < map.height {
-                    moving = true;
-                }
-                // check if the new location is actually somewhere we can move
-                if map.is_blocked(new_x, new_y) {
-                    moving = false;
-                }
-                // perform actual move (passes off to Player Moving System for animation and actual position change)
-                if moving {
-                    *game_state = GameState::PlayerMoving { delta_x, delta_y };
-                }
-            }
-        };
 
         let mut delta_x = 0.;
         let mut delta_y = 0.;
@@ -67,7 +41,7 @@ impl<'a> System<'a> for InputSystem {
         }
 
         if delta_x != 0. || delta_y != 0. {
-            try_move_player(delta_x, delta_y);
+            event_queue.events.push(Event::PlayerTriesMove{delta_x, delta_y});
         }
     }
 }

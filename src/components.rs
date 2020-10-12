@@ -4,7 +4,7 @@ use specs::{Component, DenseVecStorage};
 #[derive(Component)]
 pub struct Player;
 
-#[derive(Component, Debug)]
+#[derive(Component, Copy, Clone, Debug)]
 pub struct GridPosition {
     pub x: f32,
     pub y: f32,

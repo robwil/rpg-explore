@@ -1,8 +1,12 @@
+use crate::map::GameMap;
+use specs::ReadExpect;
+use crate::events::Event;
+use crate::events::EventQueue;
 use crate::components::GridPosition;
 use crate::components::Player;
 use crate::constants::PLAYER_MOVEMENT_DURATION;
 use crate::game_states::GameState;
-use crate::SpriteDrawable;
+use crate::components::SpriteDrawable;
 use macroquad::get_frame_time;
 use specs::Join;
 use specs::ReadStorage;
@@ -16,6 +20,8 @@ pub struct PlayerMovingSystem;
 impl<'a> System<'a> for PlayerMovingSystem {
     type SystemData = (
         WriteExpect<'a, GameState>,
+        WriteExpect<'a, EventQueue>,
+        ReadExpect<'a, GameMap>,
         ReadStorage<'a, Player>,
         WriteStorage<'a, GridPosition>,
         WriteStorage<'a, SpriteDrawable>,
@@ -24,12 +30,39 @@ impl<'a> System<'a> for PlayerMovingSystem {
     fn run(&mut self, data: Self::SystemData) {
         let delta_time = get_frame_time();
 
-        let (mut game_state, players, mut positions, mut drawables) = data;
+        let (mut game_state, mut event_queue, map, players, mut positions, mut drawables) = data;
 
-        for (_player, position, drawable) in (&players, &mut positions, &mut drawables).join() {
+        // Handle events: PlayerTriesMove
+        let mut new_events: Vec<Event> = vec![];
+        for event in event_queue.events.iter() {
+            if let Event::PlayerTriesMove{delta_x, delta_y} = event {
+                for (_player, position) in (&players, &positions).join() {
+                    let mut moving = false;
+                    let new_x = position.x + delta_x;
+                    let new_y = position.y + delta_y;
+                    println!("current position = {:?}, trying new position = {},{}", *position, new_x, new_y);
+                    // ensure they don't leave map
+                    if new_x >= 0. && new_x < map.width && new_y >= 0. && new_y < map.height {
+                        moving = true;
+                    }
+                    // check if the new location is actually somewhere we can move
+                    if map.is_blocked(new_x, new_y) {
+                        moving = false;
+                    }
+                    // perform actual move (will be handled below)
+                    if moving {
+                        *game_state = GameState::PlayerMoving { delta_x: *delta_x, delta_y: *delta_y };
+                        new_events.push(Event::PlayerLeft(*position));
+                    }
+                }
+            }
+        }
+
+        // Handle player that is already moving.
+        if let GameState::PlayerMoving { delta_x, delta_y } = *game_state {
             // TODO: The below code is pretty complicated. It'd be a lot clearer what was going on if we had a Tween class.
             // That might also allow removing the duplication because the distinct part of each of the below is mostly the directionality differences.
-            if let GameState::PlayerMoving { delta_x, delta_y } = *game_state {
+            for (_player, position, drawable) in (&players, &mut positions, &mut drawables).join() {
                 if delta_y > 0. {
                     // down
                     // the difference between 1 and current delta_y is how much we've moved so far.
@@ -107,8 +140,12 @@ impl<'a> System<'a> for PlayerMovingSystem {
                 } else {
                     // once delta_x and delta_y are 0, the movement is over
                     *game_state = GameState::AwaitingInput;
+                    new_events.push(Event::PlayerEntered(*position));
                 }
             }
         }
+
+        // Add any events that occurred from TryMove or actual movement
+        event_queue.new_events.append(&mut new_events);
     }
 }
