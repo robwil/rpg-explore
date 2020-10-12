@@ -1,13 +1,13 @@
-use crate::systems::ActionSystem;
-use crate::components::TriggerActionOnExit;
 use crate::actions::Action;
-use crate::components::TriggerActionOnEnter;
-use crate::events::EventQueue;
 use crate::components::GridPosition;
 use crate::components::Player;
 use crate::components::SpriteDrawable;
+use crate::components::TriggerActionOnEnter;
+use crate::components::TriggerActionOnExit;
+use crate::events::EventQueue;
 use crate::game_states::GameState;
 use crate::map::GameMap;
+use crate::systems::ActionSystem;
 use crate::systems::InputSystem;
 use crate::systems::PlayerMovingSystem;
 use crate::systems::RenderingSystem;
@@ -46,7 +46,9 @@ async fn main() {
     let map = GameMap::new().await;
     world.insert(map);
     world.insert(GameState::AwaitingInput);
-    world.insert(EventQueue{..Default::default()});
+    world.insert(EventQueue {
+        ..Default::default()
+    });
 
     // Create entities
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
@@ -65,14 +67,18 @@ async fn main() {
     // Top door
     world
         .create_entity()
-        .with(GridPosition {x: 11., y: 2. })
-        .with(TriggerActionOnEnter { action: Action::Teleport(GridPosition{x: 10., y: 11. })})
+        .with(GridPosition { x: 11., y: 2. })
+        .with(TriggerActionOnEnter {
+            action: Action::Teleport(GridPosition { x: 10., y: 11. }),
+        })
         .build();
     // Bottom door
     world
         .create_entity()
-        .with(GridPosition {x: 10., y: 12. })
-        .with(TriggerActionOnEnter { action: Action::Teleport(GridPosition{x: 11., y: 3. })})
+        .with(GridPosition { x: 10., y: 12. })
+        .with(TriggerActionOnEnter {
+            action: Action::Teleport(GridPosition { x: 11., y: 3. }),
+        })
         .build();
 
     let mut rendering_system = RenderingSystem {

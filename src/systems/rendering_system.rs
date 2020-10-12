@@ -51,8 +51,7 @@ impl<'a> System<'a> for RenderingSystem {
             map.tile_width * map.width * GLOBAL_MULTIPLIER,
             map.tile_height * map.height * GLOBAL_MULTIPLIER,
         );
-        map.map
-            .draw_tiles("tilelayer1", draw_dest_rect, level_rect);
+        map.map.draw_tiles("tilelayer1", draw_dest_rect, level_rect);
         map.map
             .draw_tiles("decoration1", draw_dest_rect, level_rect);
 
@@ -85,8 +84,7 @@ impl<'a> System<'a> for RenderingSystem {
         }
 
         // draw map's "foreground" layer on top of sprites, to simulate depth
-        map.map
-            .draw_tiles("tilelayer2", draw_dest_rect, level_rect);
+        map.map.draw_tiles("tilelayer2", draw_dest_rect, level_rect);
         map.map
             .draw_tiles("decoration2", draw_dest_rect, level_rect);
     }

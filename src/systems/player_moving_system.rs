@@ -1,23 +1,28 @@
-use crate::map::GameMap;
-use specs::ReadExpect;
-use crate::events::Event;
-use crate::events::EventQueue;
 use crate::components::GridPosition;
 use crate::components::Player;
-use crate::constants::PLAYER_MOVEMENT_DURATION;
-use crate::game_states::GameState;
 use crate::components::SpriteDrawable;
+use crate::constants::PLAYER_MOVEMENT_DURATION;
+use crate::events::Event;
+use crate::events::EventQueue;
+use crate::game_states::GameState;
+use crate::map::GameMap;
 use macroquad::get_frame_time;
 use specs::Join;
+use specs::ReadExpect;
 use specs::ReadStorage;
 use specs::System;
 use specs::WriteExpect;
 use specs::WriteStorage;
 
-// This system is responsible for handling the animation that occurs when the game enters GameState::PlayerMoving.
+// This system is responsible for player movement.
+// Currently, this includes:
+// 1) listening for PlayerTriesMove event and initiate GameState::PlayerMoving if moving to a valid location
+// 2) handling the animation that occurs when the game enters GameState::PlayerMoving
+// 3) firing events for PlayerExit and PlayerEnter for the old and new positions
 pub struct PlayerMovingSystem;
 
 impl<'a> System<'a> for PlayerMovingSystem {
+    #[allow(clippy::type_complexity)]
     type SystemData = (
         WriteExpect<'a, GameState>,
         WriteExpect<'a, EventQueue>,
@@ -35,12 +40,15 @@ impl<'a> System<'a> for PlayerMovingSystem {
         // Handle events: PlayerTriesMove
         let mut new_events: Vec<Event> = vec![];
         for event in event_queue.events.iter() {
-            if let Event::PlayerTriesMove{delta_x, delta_y} = event {
+            if let Event::PlayerTriesMove { delta_x, delta_y } = event {
                 for (_player, position) in (&players, &positions).join() {
                     let mut moving = false;
                     let new_x = position.x + delta_x;
                     let new_y = position.y + delta_y;
-                    println!("current position = {:?}, trying new position = {},{}", *position, new_x, new_y);
+                    println!(
+                        "current position = {:?}, trying new position = {},{}",
+                        *position, new_x, new_y
+                    );
                     // ensure they don't leave map
                     if new_x >= 0. && new_x < map.width && new_y >= 0. && new_y < map.height {
                         moving = true;
@@ -51,7 +59,10 @@ impl<'a> System<'a> for PlayerMovingSystem {
                     }
                     // perform actual move (will be handled below)
                     if moving {
-                        *game_state = GameState::PlayerMoving { delta_x: *delta_x, delta_y: *delta_y };
+                        *game_state = GameState::PlayerMoving {
+                            delta_x: *delta_x,
+                            delta_y: *delta_y,
+                        };
                         new_events.push(Event::PlayerExit(*position));
                     }
                 }

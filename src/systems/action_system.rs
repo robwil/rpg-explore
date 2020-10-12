@@ -1,14 +1,14 @@
 use crate::actions::Action;
-use crate::components::TriggerActionOnEnter;
-use specs::WriteStorage;
 use crate::components::GridPosition;
-use specs::ReadStorage;
 use crate::components::Player;
-use crate::events::EventQueue;
+use crate::components::TriggerActionOnEnter;
 use crate::events::Event;
-use specs::ReadExpect;
-use specs::System;
+use crate::events::EventQueue;
 use specs::Join;
+use specs::ReadExpect;
+use specs::ReadStorage;
+use specs::System;
+use specs::WriteStorage;
 
 pub struct ActionSystem;
 
@@ -36,7 +36,7 @@ impl<'a> System<'a> for ActionSystem {
                         }
                     }
                 }
-                _ => ()
+                _ => (),
             }
         }
 
