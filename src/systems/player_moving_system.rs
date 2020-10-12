@@ -88,7 +88,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                         // finished moving
                         new_delta_y = 0.;
                         drawable.current_frame = 8.;
-                        position.y = position.y.floor();
+                        position.y = position.y.round();
                     }
                     *game_state = GameState::PlayerMoving {
                         delta_x: 0.,
@@ -106,7 +106,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                         // finished moving
                         new_delta_y = 0.;
                         drawable.current_frame = 0.;
-                        position.y = position.y.ceil();
+                        position.y = position.y.round();
                     }
                     *game_state = GameState::PlayerMoving {
                         delta_x: 0.,
@@ -124,7 +124,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                         // finished moving
                         new_delta_x = 0.;
                         drawable.current_frame = 4.;
-                        position.x = position.x.floor();
+                        position.x = position.x.round();
                     }
                     *game_state = GameState::PlayerMoving {
                         delta_x: new_delta_x,
@@ -142,7 +142,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                         // finished moving
                         new_delta_x = 0.;
                         drawable.current_frame = 12.;
-                        position.x = position.x.ceil();
+                        position.x = position.x.round();
                     }
                     *game_state = GameState::PlayerMoving {
                         delta_x: new_delta_x,
