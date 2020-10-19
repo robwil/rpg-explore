@@ -5,6 +5,7 @@ use crate::components::SpriteDrawable;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::events::EventQueue;
+use crate::game_states::Direction;
 use crate::game_states::GameState;
 use crate::map::GameMap;
 use crate::systems::ActionSystem;
@@ -45,7 +46,9 @@ async fn main() {
     // Insert global resources
     let map = GameMap::new().await;
     world.insert(map);
-    world.insert(GameState::AwaitingInput);
+    world.insert(GameState::AwaitingInput {
+        player_facing: Direction::Down,
+    });
     world.insert(EventQueue {
         ..Default::default()
     });

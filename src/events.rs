@@ -1,12 +1,13 @@
+use crate::Direction;
 use crate::GridPosition;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Event {
-    // Fired when the player tries to move
-    PlayerTriesMove { delta_x: f32, delta_y: f32 },
+    // Fired when the player tries to move in a particular direction
+    PlayerTriesMove(Direction),
 
-    // Fired when player tries to use a particular tile
-    PlayerTriesUse(GridPosition),
+    // Fired when player presses Use button while facing a particular direction
+    PlayerTriesUse(Direction),
 
     // Fired when player successfully leaves a tile position
     PlayerExit(GridPosition),

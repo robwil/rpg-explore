@@ -1,5 +1,6 @@
 use crate::events::Event;
 use crate::game_states::GameState;
+use crate::Direction;
 use crate::EventQueue;
 use macroquad::is_key_down;
 use miniquad::KeyCode;
@@ -15,32 +16,33 @@ impl<'a> System<'a> for InputSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (mut event_queue, game_state) = data;
 
-        if *game_state != GameState::AwaitingInput {
-            return;
-        }
+        if let GameState::AwaitingInput { player_facing } = *game_state {
+            let mut direction: Option<Direction> = None;
+            if is_key_down(KeyCode::Left) {
+                direction = Some(Direction::Left);
+            }
 
-        let mut delta_x = 0.;
-        let mut delta_y = 0.;
-        if is_key_down(KeyCode::Left) {
-            delta_x -= 1.;
-        }
+            if is_key_down(KeyCode::Right) {
+                direction = Some(Direction::Right);
+            }
 
-        if is_key_down(KeyCode::Right) {
-            delta_x += 1.;
-        }
+            if is_key_down(KeyCode::Up) {
+                direction = Some(Direction::Up);
+            }
 
-        if is_key_down(KeyCode::Up) {
-            delta_y -= 1.;
-        }
+            if is_key_down(KeyCode::Down) {
+                direction = Some(Direction::Down);
+            }
 
-        if is_key_down(KeyCode::Down) {
-            delta_y += 1.;
-        }
+            if let Some(direction) = direction {
+                event_queue.events.push(Event::PlayerTriesMove(direction));
+            }
 
-        if delta_x != 0. || delta_y != 0. {
-            event_queue
-                .events
-                .push(Event::PlayerTriesMove { delta_x, delta_y });
+            if is_key_down(KeyCode::Space) {
+                event_queue
+                    .events
+                    .push(Event::PlayerTriesUse(player_facing))
+            }
         }
     }
 }
