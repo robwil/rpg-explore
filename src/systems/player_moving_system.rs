@@ -4,7 +4,6 @@ use crate::components::SpriteDrawable;
 use crate::constants::*;
 use crate::events::Event;
 use crate::events::EventQueue;
-use crate::game_states::Direction;
 use crate::game_states::GameState;
 use crate::map::GameMap;
 use macroquad::get_frame_time;
@@ -43,31 +42,8 @@ impl<'a> System<'a> for PlayerMovingSystem {
         for event in event_queue.events.iter() {
             if let Event::PlayerTriesMove(direction) = event {
                 for (_player, drawable, position) in (&players, &mut drawables, &positions).join() {
-                    let delta_x: f32;
-                    let delta_y: f32;
-                    let drawable_frame: f32;
-                    match direction {
-                        Direction::Left => {
-                            delta_x = -1.;
-                            delta_y = 0.;
-                            drawable_frame = PLAYER_LEFT_FACING_FRAME;
-                        }
-                        Direction::Right => {
-                            delta_x = 1.;
-                            delta_y = 0.;
-                            drawable_frame = PLAYER_RIGHT_FACING_FRAME;
-                        }
-                        Direction::Up => {
-                            delta_y = -1.;
-                            delta_x = 0.;
-                            drawable_frame = PLAYER_UP_FACING_FRAME;
-                        }
-                        Direction::Down => {
-                            delta_y = 1.;
-                            delta_x = 0.;
-                            drawable_frame = PLAYER_DOWN_FACING_FRAME;
-                        }
-                    }
+                    let delta_x: f32 = direction.get_delta_x();
+                    let delta_y: f32 = direction.get_delta_y();
                     let mut moving = false;
                     let new_x = position.x + delta_x;
                     let new_y = position.y + delta_y;
@@ -93,7 +69,10 @@ impl<'a> System<'a> for PlayerMovingSystem {
                         new_events.push(Event::PlayerExit(*position));
                     } else {
                         // even if player didn't move, we at least need to change their current frame to match their possible change in direction
-                        drawable.current_frame = drawable_frame;
+                        drawable.current_frame = direction.get_player_facing_frame();
+                        *game_state = GameState::AwaitingInput {
+                            player_facing: *direction,
+                        };
                     }
                 }
             }

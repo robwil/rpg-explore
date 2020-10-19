@@ -3,6 +3,7 @@ use crate::game_states::GameState;
 use crate::Direction;
 use crate::EventQueue;
 use macroquad::is_key_down;
+use macroquad::is_key_pressed;
 use miniquad::KeyCode;
 use specs::ReadExpect;
 use specs::System;
@@ -38,7 +39,7 @@ impl<'a> System<'a> for InputSystem {
                 event_queue.events.push(Event::PlayerTriesMove(direction));
             }
 
-            if is_key_down(KeyCode::Space) {
+            if is_key_pressed(KeyCode::Space) {
                 event_queue
                     .events
                     .push(Event::PlayerTriesUse(player_facing))

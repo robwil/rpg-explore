@@ -4,6 +4,7 @@ use crate::components::Player;
 use crate::components::SpriteDrawable;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
+use crate::components::TriggerActionOnUse;
 use crate::events::EventQueue;
 use crate::game_states::Direction;
 use crate::game_states::GameState;
@@ -42,6 +43,7 @@ async fn main() {
     world.register::<Player>();
     world.register::<TriggerActionOnEnter>();
     world.register::<TriggerActionOnExit>();
+    world.register::<TriggerActionOnUse>();
 
     // Insert global resources
     let map = GameMap::new().await;
@@ -81,6 +83,22 @@ async fn main() {
         .with(GridPosition { x: 10., y: 12. })
         .with(TriggerActionOnEnter {
             action: Action::Teleport(GridPosition { x: 11., y: 3. }),
+        })
+        .build();
+    // Starting position
+    world
+        .create_entity()
+        .with(GridPosition { x: 9., y: 3. })
+        .with(TriggerActionOnExit {
+            action: Action::PrintMessage("left start position".to_owned()),
+        })
+        .build();
+    // Useable urn
+    world
+        .create_entity()
+        .with(GridPosition { x: 10., y: 3. })
+        .with(TriggerActionOnUse {
+            action: Action::PrintMessage("the urn is full of snakes!".to_owned()),
         })
         .build();
 

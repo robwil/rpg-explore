@@ -29,3 +29,8 @@ pub struct TriggerActionOnEnter {
 pub struct TriggerActionOnExit {
     pub action: Action,
 }
+
+#[derive(Component)]
+pub struct TriggerActionOnUse {
+    pub action: Action,
+}
