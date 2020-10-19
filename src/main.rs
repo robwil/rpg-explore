@@ -101,6 +101,18 @@ async fn main() {
             action: Action::PrintMessage("the urn is full of snakes!".to_owned()),
         })
         .build();
+    // Standing NPC
+    world
+        .create_entity()
+        .with(GridPosition { x: 3., y: 4. })
+        .with(SpriteDrawable {
+            texture: character_texture,
+            tile_width: 16.,
+            tile_height: 24.,
+            row: 2.,
+            current_frame: 8.,
+        })
+        .build();
 
     let mut rendering_system = RenderingSystem {
         ..Default::default()
