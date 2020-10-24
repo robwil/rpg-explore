@@ -34,6 +34,12 @@ pub struct FacingDirection {
     pub direction: Direction,
 }
 
+// a strolling entity will pause for some amount of time, then move in a random direction, and repeat
+#[derive(Component)]
+pub struct Strolling {
+    pub max_pause_seconds: f32,
+}
+
 //////////////////////////////////////////
 //
 // Components used with Actions system
@@ -62,7 +68,12 @@ pub struct TriggerActionOnUse {
 //////////////////////////////////////////
 
 #[derive(Component)]
-pub struct AwaitingInputState {}
+pub struct AwaitingInputState {} // should only be used by Player entity
+
+#[derive(Component, Debug)]
+pub struct WaitingState{
+    pub remaining_wait_seconds: f32,
+}
 
 #[derive(Component)]
 pub struct EntityMovingState {
@@ -102,12 +113,12 @@ impl Direction {
             Direction::Down => 1.,
         }
     }
-    pub fn get_player_facing_frame(&self) -> f32 {
+    pub fn get_character_facing_frame(&self) -> f32 {
         match self {
-            Direction::Left => PLAYER_LEFT_FACING_FRAME,
-            Direction::Right => PLAYER_RIGHT_FACING_FRAME,
-            Direction::Up => PLAYER_UP_FACING_FRAME,
-            Direction::Down => PLAYER_DOWN_FACING_FRAME,
+            Direction::Left => CHARACTER_LEFT_FACING_FRAME,
+            Direction::Right => CHARACTER_RIGHT_FACING_FRAME,
+            Direction::Up => CHARACTER_UP_FACING_FRAME,
+            Direction::Down => CHARACTER_DOWN_FACING_FRAME,
         }
     }
 }

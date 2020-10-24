@@ -1,3 +1,6 @@
+use crate::systems::PlanStrollSystem;
+use crate::components::WaitingState;
+use crate::components::Strolling;
 use crate::actions::Action;
 use crate::components::AwaitingInputState;
 use crate::components::Direction;
@@ -47,7 +50,9 @@ async fn main() {
     world.register::<TriggerActionOnExit>();
     world.register::<TriggerActionOnUse>();
     world.register::<FacingDirection>();
+    world.register::<Strolling>();
     world.register::<AwaitingInputState>();
+    world.register::<WaitingState>();
     world.register::<EntityMovingState>();
 
     // Create entities
@@ -115,6 +120,22 @@ async fn main() {
             direction: Direction::Down,
         })
         .build();
+    // Strolling NPC
+    world
+        .create_entity()
+        .with(GridPosition { x: 6., y: 8. })
+        .with(SpriteDrawable {
+            texture: character_texture,
+            tile_width: 16.,
+            tile_height: 24.,
+            row: 4.,
+            current_frame: 8.,
+        })
+        .with(FacingDirection {
+            direction: Direction::Down,
+        })
+        .with(Strolling{max_pause_seconds: 3.})
+        .build();
 
     // Insert global resources
     let map = GameMap::new().await;
@@ -138,8 +159,11 @@ async fn main() {
         let mut input_system = InputSystem {};
         input_system.run_now(&world);
 
-        let mut player_moving_system = CharacterMovingSystem {};
-        player_moving_system.run_now(&world);
+        let mut plan_stroll_system = PlanStrollSystem {};
+        plan_stroll_system.run_now(&world);
+
+        let mut character_moving_system = CharacterMovingSystem {};
+        character_moving_system.run_now(&world);
 
         let mut action_system = ActionSystem {};
         action_system.run_now(&world);
