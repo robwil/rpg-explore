@@ -54,7 +54,8 @@ impl<'a> System<'a> for PlanStrollSystem {
                         waiting_state.remaining_wait_seconds -= delta_time;
                     }
                 },
-                // no state, means it's this system's job to set up WaitingState
+                // no waiting OR moving state, means it's this system's job to set up WaitingState
+                // this happens at beginning of game or when previous movement has finished
                 (None, None) => {
                     waiting_states.insert(entity, WaitingState{
                         remaining_wait_seconds: qrand::gen_range(0., strolling.max_pause_seconds)
