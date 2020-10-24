@@ -19,19 +19,19 @@ impl<'a> System<'a> for InputSystem {
 
         if let GameState::AwaitingInput { player_facing } = *game_state {
             let mut direction: Option<Direction> = None;
-            if is_key_down(KeyCode::Left) {
+            if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
                 direction = Some(Direction::Left);
             }
 
-            if is_key_down(KeyCode::Right) {
+            if is_key_down(KeyCode::Right) || is_key_down(KeyCode::D) {
                 direction = Some(Direction::Right);
             }
 
-            if is_key_down(KeyCode::Up) {
+            if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
                 direction = Some(Direction::Up);
             }
 
-            if is_key_down(KeyCode::Down) {
+            if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
                 direction = Some(Direction::Down);
             }
 
