@@ -1,10 +1,12 @@
+use specs::Entity;
 use crate::Direction;
 use crate::GridPosition;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Event {
-    // Fired when the player tries to move in a particular direction
-    PlayerTriesMove(Direction),
+    // Fired when an entity tries to move in a particular direction
+    // EntityTriesMove(Entity, Direction),
+    EntityTriesMove(Direction),
 
     // Fired when player presses Use button while facing a particular direction
     PlayerTriesUse(Direction),

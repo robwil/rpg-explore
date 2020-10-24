@@ -14,6 +14,12 @@ $ basic-http-server .
 
 Then navigate to http://127.0.0.1:4000/rpg-explore.html to see the WASM in action.
 
+I also made a simple deployment script to deploy to a static GCS bucket:
+
+```
+$ ./scripts/deploy_wasm.sh <deployment_name>
+```
+
 ## Dev notes
 
 Here I am going to write various notes of things that were non-obvious in implementing the game.

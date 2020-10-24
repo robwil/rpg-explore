@@ -1,3 +1,4 @@
+use specs::Entity;
 use crate::constants::*;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -45,4 +46,9 @@ impl Direction {
             Direction::Down => PLAYER_DOWN_FACING_FRAME,
         }
     }
+}
+
+// "marker" struct to wrap Player entity
+pub struct PlayerEntity {
+    pub entity: Entity
 }

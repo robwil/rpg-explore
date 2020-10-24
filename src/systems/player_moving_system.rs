@@ -40,7 +40,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
         // Handle events: PlayerTriesMove
         let mut new_events: Vec<Event> = vec![];
         for event in event_queue.events.iter() {
-            if let Event::PlayerTriesMove(direction) = event {
+            if let Event::EntityTriesMove(direction) = event {
                 for (_player, drawable, position) in (&players, &mut drawables, &positions).join() {
                     let delta_x: f32 = direction.get_delta_x();
                     let delta_y: f32 = direction.get_delta_y();

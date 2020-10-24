@@ -36,7 +36,7 @@ impl<'a> System<'a> for InputSystem {
             }
 
             if let Some(direction) = direction {
-                event_queue.events.push(Event::PlayerTriesMove(direction));
+                event_queue.events.push(Event::EntityTriesMove(direction));
             }
 
             if is_key_pressed(KeyCode::Space) {

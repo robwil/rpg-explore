@@ -1,3 +1,4 @@
+use crate::game_states::PlayerEntity;
 use crate::actions::Action;
 use crate::components::GridPosition;
 use crate::components::Player;
@@ -45,19 +46,9 @@ async fn main() {
     world.register::<TriggerActionOnExit>();
     world.register::<TriggerActionOnUse>();
 
-    // Insert global resources
-    let map = GameMap::new().await;
-    world.insert(map);
-    world.insert(GameState::AwaitingInput {
-        player_facing: Direction::Down,
-    });
-    world.insert(EventQueue {
-        ..Default::default()
-    });
-
     // Create entities
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
-    world
+    let player_entity = world
         .create_entity()
         .with(Player {})
         .with(GridPosition { x: 9., y: 3. })
@@ -113,6 +104,17 @@ async fn main() {
             current_frame: 8.,
         })
         .build();
+
+    // Insert global resources
+    let map = GameMap::new().await;
+    world.insert(map);
+    world.insert(GameState::AwaitingInput {
+        player_facing: Direction::Down,
+    });
+    world.insert(EventQueue {
+        ..Default::default()
+    });
+    world.insert(PlayerEntity{ entity: player_entity });
 
     let mut rendering_system = RenderingSystem {
         ..Default::default()
