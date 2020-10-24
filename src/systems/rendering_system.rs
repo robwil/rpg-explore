@@ -1,3 +1,5 @@
+use core::cmp::Ordering::Equal;
+use specs::Entity;
 use crate::components::GridPosition;
 use crate::components::SpriteDrawable;
 use crate::constants::GLOBAL_MULTIPLIER;
@@ -56,7 +58,11 @@ impl<'a> System<'a> for RenderingSystem {
             .draw_tiles("decoration1", draw_dest_rect, level_rect);
 
         // draw any SpriteDrawables with GridPosition
-        for (drawable, position) in (&drawables, &positions).join() {
+        // TODO: This allocated a new Vec on every frame, and is called out as a bad idea in Specs docs (https://specs.amethyst.rs/docs/tutorials/11_advanced_component.html#sorting-entities-based-on-component-value)
+        //       If necessary, we can migrate Positions/Drawables to FlaggedStorage and maintain this sorted set on the System struct
+        let mut to_draw = (&drawables, &positions).join().collect::<Vec<_>>();
+        to_draw.sort_by(|&a, &b| a.1.y.partial_cmp(&b.1.y).unwrap_or(Equal));
+        for (drawable, position) in to_draw {
             draw_texture_ex(
                 drawable.texture,
                 // x position is simply the current grid position * map tile width (plus the global modifiers)
