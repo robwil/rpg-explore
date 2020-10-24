@@ -1,5 +1,6 @@
+use crate::PlayerEntity;
 use crate::events::Event;
-use crate::game_states::GameState;
+use crate::components::GameState;
 use crate::Direction;
 use crate::EventQueue;
 use macroquad::is_key_down;
@@ -12,10 +13,10 @@ use specs::WriteExpect;
 pub struct InputSystem;
 
 impl<'a> System<'a> for InputSystem {
-    type SystemData = (WriteExpect<'a, EventQueue>, ReadExpect<'a, GameState>);
+    type SystemData = (WriteExpect<'a, EventQueue>, ReadExpect<'a, GameState>, ReadExpect<'a, PlayerEntity>);
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut event_queue, game_state) = data;
+        let (mut event_queue, game_state, player_entity) = data;
 
         if let GameState::AwaitingInput { player_facing } = *game_state {
             let mut direction: Option<Direction> = None;
@@ -36,7 +37,7 @@ impl<'a> System<'a> for InputSystem {
             }
 
             if let Some(direction) = direction {
-                event_queue.events.push(Event::EntityTriesMove(direction));
+                event_queue.events.push(Event::EntityTriesMove(player_entity.entity, direction));
             }
 
             if is_key_pressed(KeyCode::Space) {

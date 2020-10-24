@@ -5,8 +5,7 @@ use crate::GridPosition;
 #[derive(Debug, Copy, Clone)]
 pub enum Event {
     // Fired when an entity tries to move in a particular direction
-    // EntityTriesMove(Entity, Direction),
-    EntityTriesMove(Direction),
+    EntityTriesMove(Entity, Direction),
 
     // Fired when player presses Use button while facing a particular direction
     PlayerTriesUse(Direction),

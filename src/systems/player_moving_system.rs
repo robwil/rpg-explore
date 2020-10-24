@@ -1,10 +1,11 @@
+use crate::PlayerEntity;
 use crate::components::GridPosition;
 use crate::components::Player;
 use crate::components::SpriteDrawable;
 use crate::constants::*;
 use crate::events::Event;
 use crate::events::EventQueue;
-use crate::game_states::GameState;
+use crate::components::GameState;
 use crate::map::GameMap;
 use macroquad::get_frame_time;
 use specs::Join;
@@ -19,6 +20,7 @@ use specs::WriteStorage;
 // 1) listening for PlayerTriesMove event and initiate GameState::PlayerMoving if moving to a valid location
 // 2) handling the animation that occurs when the game enters GameState::PlayerMoving
 // 3) firing events for PlayerExit and PlayerEnter for the old and new positions
+// TODO: rename to CharacterMovementSystem
 pub struct PlayerMovingSystem;
 
 impl<'a> System<'a> for PlayerMovingSystem {
@@ -27,6 +29,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
         WriteExpect<'a, GameState>,
         WriteExpect<'a, EventQueue>,
         ReadExpect<'a, GameMap>,
+        ReadExpect<'a, PlayerEntity>,
         ReadStorage<'a, Player>,
         WriteStorage<'a, GridPosition>,
         WriteStorage<'a, SpriteDrawable>,
@@ -35,13 +38,13 @@ impl<'a> System<'a> for PlayerMovingSystem {
     fn run(&mut self, data: Self::SystemData) {
         let delta_time = get_frame_time();
 
-        let (mut game_state, mut event_queue, map, players, mut positions, mut drawables) = data;
+        let (mut game_state, mut event_queue, map, player_entity, players, mut positions, mut drawables) = data;
 
         // Handle events: PlayerTriesMove
         let mut new_events: Vec<Event> = vec![];
         for event in event_queue.events.iter() {
-            if let Event::EntityTriesMove(direction) = event {
-                for (_player, drawable, position) in (&players, &mut drawables, &positions).join() {
+            if let Event::EntityTriesMove(entity, direction) = event {
+                if let (Some(drawable), Some(position)) = (drawables.get_mut(*entity), positions.get(*entity)) {
                     let delta_x: f32 = direction.get_delta_x();
                     let delta_y: f32 = direction.get_delta_y();
                     let mut moving = false;

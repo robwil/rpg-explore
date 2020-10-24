@@ -1,4 +1,4 @@
-use crate::game_states::PlayerEntity;
+use crate::components::PlayerEntity;
 use crate::actions::Action;
 use crate::components::GridPosition;
 use crate::components::Player;
@@ -7,8 +7,8 @@ use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
 use crate::events::EventQueue;
-use crate::game_states::Direction;
-use crate::game_states::GameState;
+use crate::components::Direction;
+use crate::components::GameState;
 use crate::map::GameMap;
 use crate::systems::ActionSystem;
 use crate::systems::InputSystem;
@@ -22,7 +22,6 @@ mod actions;
 mod components;
 mod constants;
 mod events;
-mod game_states;
 mod map;
 mod systems;
 
