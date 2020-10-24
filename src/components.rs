@@ -70,8 +70,8 @@ pub struct TriggerActionOnUse {
 #[derive(Component)]
 pub struct AwaitingInputState {} // should only be used by Player entity
 
-#[derive(Component, Debug)]
-pub struct WaitingState{
+#[derive(Component)]
+pub struct WaitingState {
     pub remaining_wait_seconds: f32,
 }
 

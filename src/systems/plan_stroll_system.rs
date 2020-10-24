@@ -1,17 +1,17 @@
-use crate::events::Event;
-use crate::EntityMovingState;
-use specs::WriteStorage;
-use macroquad::get_frame_time;
-use crate::events::EventQueue;
+use crate::components::Direction;
 use crate::components::Strolling;
 use crate::components::WaitingState;
-use crate::components::Direction;
-use specs::ReadStorage;
-use specs::Entities;
-use specs::WriteExpect;
-use specs::System;
-use specs::Join;
+use crate::events::Event;
+use crate::events::EventQueue;
+use crate::EntityMovingState;
+use macroquad::get_frame_time;
 use quad_rand as qrand;
+use specs::Entities;
+use specs::Join;
+use specs::ReadStorage;
+use specs::System;
+use specs::WriteExpect;
+use specs::WriteStorage;
 
 // This system is responsible for planning (basic "AI") of all Strolling entities.
 // Currently, this includes:
@@ -30,11 +30,15 @@ impl<'a> System<'a> for PlanStrollSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut event_queue, entities, strollings, entity_moving_states, mut waiting_states) = data;
+        let (mut event_queue, entities, strollings, entity_moving_states, mut waiting_states) =
+            data;
         let delta_time = get_frame_time();
 
         for (entity, strolling) in (&entities, &strollings).join() {
-            match (waiting_states.get_mut(entity), entity_moving_states.get(entity)) {
+            match (
+                waiting_states.get_mut(entity),
+                entity_moving_states.get(entity),
+            ) {
                 // waiting and not moving
                 (Some(waiting_state), None) => {
                     if waiting_state.remaining_wait_seconds - delta_time <= 0. {
@@ -53,16 +57,24 @@ impl<'a> System<'a> for PlanStrollSystem {
                     } else {
                         waiting_state.remaining_wait_seconds -= delta_time;
                     }
-                },
+                }
                 // no waiting OR moving state, means it's this system's job to set up WaitingState
                 // this happens at beginning of game or when previous movement has finished
                 (None, None) => {
-                    waiting_states.insert(entity, WaitingState{
-                        remaining_wait_seconds: qrand::gen_range(0., strolling.max_pause_seconds)
-                    }).expect("failed to insert waiting state for strolling entity");
-                },
+                    waiting_states
+                        .insert(
+                            entity,
+                            WaitingState {
+                                remaining_wait_seconds: qrand::gen_range(
+                                    0.,
+                                    strolling.max_pause_seconds,
+                                ),
+                            },
+                        )
+                        .expect("failed to insert waiting state for strolling entity");
+                }
                 // otherwise, the entity is already moving so it's being handled by movement system
-                _ => ()
+                _ => (),
             };
         }
     }

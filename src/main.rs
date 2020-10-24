@@ -1,6 +1,3 @@
-use crate::systems::PlanStrollSystem;
-use crate::components::WaitingState;
-use crate::components::Strolling;
 use crate::actions::Action;
 use crate::components::AwaitingInputState;
 use crate::components::Direction;
@@ -10,17 +7,20 @@ use crate::components::GridPosition;
 use crate::components::Player;
 use crate::components::PlayerEntity;
 use crate::components::SpriteDrawable;
+use crate::components::Strolling;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
+use crate::components::WaitingState;
 use crate::events::EventQueue;
 use crate::map::GameMap;
 use crate::systems::ActionSystem;
 use crate::systems::CharacterMovingSystem;
 use crate::systems::InputSystem;
+use crate::systems::PlanStrollSystem;
 use crate::systems::RenderingSystem;
 use macroquad::*;
-use specs::RunNow;
+use specs::DispatcherBuilder;
 use specs::{Builder, World, WorldExt};
 
 mod actions;
@@ -134,7 +134,9 @@ async fn main() {
         .with(FacingDirection {
             direction: Direction::Down,
         })
-        .with(Strolling{max_pause_seconds: 3.})
+        .with(Strolling {
+            max_pause_seconds: 3.,
+        })
         .build();
 
     // Insert global resources
@@ -147,31 +149,32 @@ async fn main() {
         entity: player_entity,
     });
 
-    let mut rendering_system = RenderingSystem {
-        ..Default::default()
-    };
+    let mut dispatcher = DispatcherBuilder::new()
+        .with(InputSystem, "input", &[])
+        .with(PlanStrollSystem, "plan_stroll", &[])
+        .with(
+            CharacterMovingSystem,
+            "character_moving",
+            &["input", "plan_stroll"],
+        )
+        .with(ActionSystem, "action", &[])
+        .with(
+            RenderingSystem {
+                ..Default::default()
+            },
+            "rendering",
+            &[],
+        )
+        .build();
 
     loop {
         clear_background(BLACK);
 
-        // TODO: switch to use SPECS dispatcher here (https://specs.amethyst.rs/docs/tutorials/03_dispatcher.html)
-
-        let mut input_system = InputSystem {};
-        input_system.run_now(&world);
-
-        let mut plan_stroll_system = PlanStrollSystem {};
-        plan_stroll_system.run_now(&world);
-
-        let mut character_moving_system = CharacterMovingSystem {};
-        character_moving_system.run_now(&world);
-
-        let mut action_system = ActionSystem {};
-        action_system.run_now(&world);
-
-        rendering_system.run_now(&world);
-
+        // run ECS systems
+        dispatcher.dispatch(&world);
         world.maintain();
 
+        // handle events
         let mut event_queue = world.write_resource::<EventQueue>();
         if !event_queue.events.is_empty() {
             println!("current events: {:?}", event_queue.events);

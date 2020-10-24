@@ -190,10 +190,9 @@ impl<'a> System<'a> for CharacterMovingSystem {
                 // once delta_x and delta_y are 0, the movement is over
                 entities_done_moving.push(entity);
 
-                // TODO: make this more generic to non-player characters
                 if entity.id() == player_entity.entity.id() {
                     // only actual player has Awaiting Input state.
-                    // NPCs probably have a different default state, which we'll need to handle later
+                    // TODO: could probably move the handling of AwaitingInputState to input_system like we did with plan_stroll_system.
                     awaiting_input_states
                         .insert(player_entity.entity, AwaitingInputState {})
                         .expect("failed to insert player AwaitingInputState");
