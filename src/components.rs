@@ -4,6 +4,8 @@ use macroquad::Texture2D;
 use specs::Entity;
 use specs::{Component, DenseVecStorage};
 
+// TODO: figure out how to use NullStorage and use it for all 'marker' components without data in them
+
 #[derive(Component)]
 pub struct Player;
 
@@ -39,6 +41,9 @@ pub struct FacingDirection {
 pub struct Strolling {
     pub max_pause_seconds: f32,
 }
+
+#[derive(Component)]
+pub struct BlocksMovement;
 
 //////////////////////////////////////////
 //

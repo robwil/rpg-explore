@@ -1,5 +1,6 @@
 use crate::actions::Action;
 use crate::components::AwaitingInputState;
+use crate::components::BlocksMovement;
 use crate::components::Direction;
 use crate::components::EntityMovingState;
 use crate::components::FacingDirection;
@@ -46,6 +47,7 @@ async fn main() {
     world.register::<GridPosition>();
     world.register::<SpriteDrawable>();
     world.register::<Player>();
+    world.register::<BlocksMovement>();
     world.register::<TriggerActionOnEnter>();
     world.register::<TriggerActionOnExit>();
     world.register::<TriggerActionOnUse>();
@@ -60,6 +62,7 @@ async fn main() {
     let player_entity = world
         .create_entity()
         .with(Player {})
+        .with(BlocksMovement {})
         .with(GridPosition { x: 9., y: 3. })
         .with(SpriteDrawable {
             texture: character_texture,
@@ -101,6 +104,7 @@ async fn main() {
     world
         .create_entity()
         .with(GridPosition { x: 10., y: 3. })
+        .with(BlocksMovement {})
         .with(TriggerActionOnUse {
             action: Action::PrintMessage("the urn is full of snakes!".to_owned()),
         })
@@ -109,6 +113,7 @@ async fn main() {
     world
         .create_entity()
         .with(GridPosition { x: 3., y: 4. })
+        .with(BlocksMovement {})
         .with(SpriteDrawable {
             texture: character_texture,
             tile_width: 16.,
@@ -124,6 +129,7 @@ async fn main() {
     world
         .create_entity()
         .with(GridPosition { x: 6., y: 8. })
+        .with(BlocksMovement {})
         .with(SpriteDrawable {
             texture: character_texture,
             tile_width: 16.,

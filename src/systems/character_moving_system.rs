@@ -1,4 +1,5 @@
 use crate::components::AwaitingInputState;
+use crate::components::BlocksMovement;
 use crate::components::EntityMovingState;
 use crate::components::FacingDirection;
 use crate::components::GridPosition;
@@ -13,6 +14,7 @@ use specs::Entities;
 use specs::Entity;
 use specs::Join;
 use specs::ReadExpect;
+use specs::ReadStorage;
 use specs::System;
 use specs::WriteExpect;
 use specs::WriteStorage;
@@ -32,6 +34,7 @@ impl<'a> System<'a> for CharacterMovingSystem {
         ReadExpect<'a, GameMap>,
         ReadExpect<'a, PlayerEntity>,
         Entities<'a>,
+        ReadStorage<'a, BlocksMovement>,
         WriteStorage<'a, AwaitingInputState>,
         WriteStorage<'a, EntityMovingState>,
         WriteStorage<'a, GridPosition>,
@@ -47,6 +50,7 @@ impl<'a> System<'a> for CharacterMovingSystem {
             map,
             player_entity,
             entities,
+            blocks_movement,
             mut awaiting_input_states,
             mut entity_moving_states,
             mut positions,
@@ -77,6 +81,25 @@ impl<'a> System<'a> for CharacterMovingSystem {
                     // check if the new location is actually somewhere we can move
                     if map.is_blocked(new_x, new_y) {
                         moving = false;
+                    }
+                    // check if any other entity that blocks movement is in new_x/new_y position
+                    for (other_entity_position, _blocks_movement) in
+                        (&positions, &blocks_movement).join()
+                    {
+                        if other_entity_position.x == new_x && other_entity_position.y == new_y {
+                            moving = false;
+                        }
+                    }
+                    // check if any moving entity is currently moving headed toward new_x/new_y position
+                    for (other_entity_position, entity_moving_state) in
+                        (&positions, &entity_moving_states).join()
+                    {
+                        if (other_entity_position.x + entity_moving_state.delta_x).round() == new_x
+                            || (other_entity_position.y + entity_moving_state.delta_y).round()
+                                == new_y
+                        {
+                            moving = false;
+                        }
                     }
 
                     // Regardless of actually moving, their attempt to move has changed their facing direction
