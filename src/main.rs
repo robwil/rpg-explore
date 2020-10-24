@@ -1,27 +1,32 @@
 use crate::actions::Action;
+use crate::components::AwaitingInputState;
+use crate::components::Direction;
+use crate::components::EntityMovingState;
+use crate::components::FacingDirection;
 use crate::components::GridPosition;
 use crate::components::Player;
+use crate::components::PlayerEntity;
 use crate::components::SpriteDrawable;
+use crate::components::Strolling;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
+use crate::components::WaitingState;
 use crate::events::EventQueue;
-use crate::game_states::Direction;
-use crate::game_states::GameState;
 use crate::map::GameMap;
 use crate::systems::ActionSystem;
+use crate::systems::CharacterMovingSystem;
 use crate::systems::InputSystem;
-use crate::systems::PlayerMovingSystem;
+use crate::systems::PlanStrollSystem;
 use crate::systems::RenderingSystem;
 use macroquad::*;
-use specs::RunNow;
+use specs::DispatcherBuilder;
 use specs::{Builder, World, WorldExt};
 
 mod actions;
 mod components;
 mod constants;
 mod events;
-mod game_states;
 mod map;
 mod systems;
 
@@ -44,20 +49,15 @@ async fn main() {
     world.register::<TriggerActionOnEnter>();
     world.register::<TriggerActionOnExit>();
     world.register::<TriggerActionOnUse>();
-
-    // Insert global resources
-    let map = GameMap::new().await;
-    world.insert(map);
-    world.insert(GameState::AwaitingInput {
-        player_facing: Direction::Down,
-    });
-    world.insert(EventQueue {
-        ..Default::default()
-    });
+    world.register::<FacingDirection>();
+    world.register::<Strolling>();
+    world.register::<AwaitingInputState>();
+    world.register::<WaitingState>();
+    world.register::<EntityMovingState>();
 
     // Create entities
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
-    world
+    let player_entity = world
         .create_entity()
         .with(Player {})
         .with(GridPosition { x: 9., y: 3. })
@@ -68,6 +68,10 @@ async fn main() {
             row: 0.,
             current_frame: 8.,
         })
+        .with(FacingDirection {
+            direction: Direction::Down,
+        })
+        .with(AwaitingInputState {})
         .build();
     // Top door
     world
@@ -112,28 +116,65 @@ async fn main() {
             row: 2.,
             current_frame: 8.,
         })
+        .with(FacingDirection {
+            direction: Direction::Down,
+        })
+        .build();
+    // Strolling NPC
+    world
+        .create_entity()
+        .with(GridPosition { x: 6., y: 8. })
+        .with(SpriteDrawable {
+            texture: character_texture,
+            tile_width: 16.,
+            tile_height: 24.,
+            row: 4.,
+            current_frame: 8.,
+        })
+        .with(FacingDirection {
+            direction: Direction::Down,
+        })
+        .with(Strolling {
+            max_pause_seconds: 3.,
+        })
         .build();
 
-    let mut rendering_system = RenderingSystem {
+    // Insert global resources
+    let map = GameMap::new().await;
+    world.insert(map);
+    world.insert(EventQueue {
         ..Default::default()
-    };
+    });
+    world.insert(PlayerEntity {
+        entity: player_entity,
+    });
+
+    let mut dispatcher = DispatcherBuilder::new()
+        .with(InputSystem, "input", &[])
+        .with(PlanStrollSystem, "plan_stroll", &[])
+        .with(
+            CharacterMovingSystem,
+            "character_moving",
+            &["input", "plan_stroll"],
+        )
+        .with(ActionSystem, "action", &[])
+        .with(
+            RenderingSystem {
+                ..Default::default()
+            },
+            "rendering",
+            &[],
+        )
+        .build();
 
     loop {
         clear_background(BLACK);
 
-        let mut input_system = InputSystem {};
-        input_system.run_now(&world);
-
-        let mut player_moving_system = PlayerMovingSystem {};
-        player_moving_system.run_now(&world);
-
-        let mut action_system = ActionSystem {};
-        action_system.run_now(&world);
-
-        rendering_system.run_now(&world);
-
+        // run ECS systems
+        dispatcher.dispatch(&world);
         world.maintain();
 
+        // handle events
         let mut event_queue = world.write_resource::<EventQueue>();
         if !event_queue.events.is_empty() {
             println!("current events: {:?}", event_queue.events);

@@ -1,23 +1,29 @@
 use crate::events::Event;
-use crate::game_states::GameState;
+use crate::AwaitingInputState;
 use crate::Direction;
 use crate::EventQueue;
+use crate::PlayerEntity;
 use macroquad::is_key_down;
 use macroquad::is_key_pressed;
 use miniquad::KeyCode;
 use specs::ReadExpect;
+use specs::ReadStorage;
 use specs::System;
 use specs::WriteExpect;
 
 pub struct InputSystem;
 
 impl<'a> System<'a> for InputSystem {
-    type SystemData = (WriteExpect<'a, EventQueue>, ReadExpect<'a, GameState>);
+    type SystemData = (
+        WriteExpect<'a, EventQueue>,
+        ReadStorage<'a, AwaitingInputState>,
+        ReadExpect<'a, PlayerEntity>,
+    );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut event_queue, game_state) = data;
+        let (mut event_queue, awaiting_input_states, player_entity) = data;
 
-        if let GameState::AwaitingInput { player_facing } = *game_state {
+        if let Some(_player_awaiting_input) = awaiting_input_states.get(player_entity.entity) {
             let mut direction: Option<Direction> = None;
             if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
                 direction = Some(Direction::Left);
@@ -36,13 +42,13 @@ impl<'a> System<'a> for InputSystem {
             }
 
             if let Some(direction) = direction {
-                event_queue.events.push(Event::PlayerTriesMove(direction));
+                event_queue
+                    .events
+                    .push(Event::EntityTriesMove(player_entity.entity, direction));
             }
 
             if is_key_pressed(KeyCode::Space) {
-                event_queue
-                    .events
-                    .push(Event::PlayerTriesUse(player_facing))
+                event_queue.events.push(Event::PlayerTriesUse())
             }
         }
     }

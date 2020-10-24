@@ -14,6 +14,12 @@ $ basic-http-server .
 
 Then navigate to http://127.0.0.1:4000/rpg-explore.html to see the WASM in action.
 
+I also made a simple deployment script to deploy to a static GCS bucket:
+
+```
+$ ./scripts/deploy_wasm.sh <deployment_name>
+```
+
 ## Dev notes
 
 Here I am going to write various notes of things that were non-obvious in implementing the game.
@@ -33,7 +39,7 @@ That being said, Tiled maps are used in this game for the following things:
 
 A "trigger" in an RPG like this is some action that gets triggered based on the player entering, exiting, or "using" a particular map tile. There were two tricky aspects to handling this in an ECS system.
 
-First of all, how do we keep track of the player entering, exiting, or using particular tiles? The most natural place for this is the Player Movement System, which is where we handle the animation and actual movement on screen of the player going from one tile to the next. On any valid movement, this is where we know a player is exiting or entering a tile. For the "using" case, that can be handled in the Input System by simply checking for the use key. The actual tracking of this can be handled by emitting an Event, which will be stored as a global Resource in the ECS world.
+First of all, how do we keep track of the player entering, exiting, or using particular tiles? The most natural place for this is the Movement System, which is where we handle the animation and actual movement on screen of the player going from one tile to the next. On any valid movement, this is where we know a player is exiting or entering a tile. For the "using" case, that can be handled in the Input System by simply checking for the use key. The actual tracking of this can be handled by emitting an Event, which will be stored as a global Resource in the ECS world.
 
 How to actually represent event state within the app? For simplicity, I am just using a global `EventQueue` containing two vecs: current events, and new events. At the end of each frame, the current events are cleared and replaced by the new events. This allows multiple systems to read the current events in a decoupled fashion, while also allowing multiple systems to emit new events. The decoupled nature could have downsides in the future if things get too complex because the relationships between producers and subscribers is not explicit, but it seems like the best way to handle things.
 
