@@ -85,7 +85,7 @@ impl<'a> System<'a> for CharacterMovingSystem {
                             direction: *direction,
                         };
                     }
-                    drawable.current_frame = direction.get_player_facing_frame();
+                    drawable.current_frame = direction.get_character_facing_frame();
 
                     // if the move was successful, perform actual move (will be handled below) by adding EntityMovingState to the entity
                     if moving {
@@ -125,64 +125,64 @@ impl<'a> System<'a> for CharacterMovingSystem {
                 // the difference between 1 and current delta_y is how much we've moved so far.
                 // we use that to determine the current animation frame and to tween the actual movement of position
                 let elapsed_duration =
-                    (1. - moving_state.delta_y) * PLAYER_MOVEMENT_DURATION + delta_time;
-                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                drawable.current_frame = PLAYER_DOWN_FACING_FRAME
-                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                    (1. - moving_state.delta_y) * CHARACTER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / CHARACTER_MOVEMENT_DURATION;
+                drawable.current_frame = CHARACTER_DOWN_FACING_FRAME
+                    + (elapsed_duration / CHARACTER_MOVEMENT_DURATION * 4.).floor();
                 position.y += movement_this_frame;
                 let mut new_delta_y = moving_state.delta_y - movement_this_frame;
                 if new_delta_y < 0. {
                     // finished moving
                     new_delta_y = 0.;
-                    drawable.current_frame = PLAYER_DOWN_FACING_FRAME;
+                    drawable.current_frame = CHARACTER_DOWN_FACING_FRAME;
                     position.y = position.y.round();
                 }
                 moving_state.delta_y = new_delta_y;
             } else if moving_state.delta_y < 0. {
                 // up
                 let elapsed_duration =
-                    (1. - -moving_state.delta_y) * PLAYER_MOVEMENT_DURATION + delta_time;
-                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                drawable.current_frame = PLAYER_UP_FACING_FRAME
-                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                    (1. - -moving_state.delta_y) * CHARACTER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / CHARACTER_MOVEMENT_DURATION;
+                drawable.current_frame = CHARACTER_UP_FACING_FRAME
+                    + (elapsed_duration / CHARACTER_MOVEMENT_DURATION * 4.).floor();
                 position.y -= movement_this_frame;
                 let mut new_delta_y = moving_state.delta_y + movement_this_frame;
                 if new_delta_y > 0. {
                     // finished moving
                     new_delta_y = 0.;
-                    drawable.current_frame = PLAYER_UP_FACING_FRAME;
+                    drawable.current_frame = CHARACTER_UP_FACING_FRAME;
                     position.y = position.y.round();
                 }
                 moving_state.delta_y = new_delta_y;
             } else if moving_state.delta_x > 0. {
                 // right
                 let elapsed_duration =
-                    (1. - moving_state.delta_x) * PLAYER_MOVEMENT_DURATION + delta_time;
-                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                drawable.current_frame = PLAYER_RIGHT_FACING_FRAME
-                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                    (1. - moving_state.delta_x) * CHARACTER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / CHARACTER_MOVEMENT_DURATION;
+                drawable.current_frame = CHARACTER_RIGHT_FACING_FRAME
+                    + (elapsed_duration / CHARACTER_MOVEMENT_DURATION * 4.).floor();
                 position.x += movement_this_frame;
                 let mut new_delta_x = moving_state.delta_x - movement_this_frame;
                 if new_delta_x < 0. {
                     // finished moving
                     new_delta_x = 0.;
-                    drawable.current_frame = PLAYER_RIGHT_FACING_FRAME;
+                    drawable.current_frame = CHARACTER_RIGHT_FACING_FRAME;
                     position.x = position.x.round();
                 }
                 moving_state.delta_x = new_delta_x;
             } else if moving_state.delta_x < 0. {
                 // left
                 let elapsed_duration =
-                    (1. - -moving_state.delta_x) * PLAYER_MOVEMENT_DURATION + delta_time;
-                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                drawable.current_frame = PLAYER_LEFT_FACING_FRAME
-                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                    (1. - -moving_state.delta_x) * CHARACTER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / CHARACTER_MOVEMENT_DURATION;
+                drawable.current_frame = CHARACTER_LEFT_FACING_FRAME
+                    + (elapsed_duration / CHARACTER_MOVEMENT_DURATION * 4.).floor();
                 position.x -= movement_this_frame;
                 let mut new_delta_x = moving_state.delta_x + movement_this_frame;
                 if new_delta_x > 0. {
                     // finished moving
                     new_delta_x = 0.;
-                    drawable.current_frame = PLAYER_LEFT_FACING_FRAME;
+                    drawable.current_frame = CHARACTER_LEFT_FACING_FRAME;
                     position.x = position.x.round();
                 }
                 moving_state.delta_x = new_delta_x;
