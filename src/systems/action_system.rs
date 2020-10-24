@@ -1,6 +1,7 @@
-use crate::PlayerEntity;
 use crate::actions::Action;
+use crate::components::FacingDirection;
 use crate::components::GridPosition;
+use crate::components::PlayerEntity;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
@@ -22,13 +23,21 @@ impl<'a> System<'a> for ActionSystem {
         ReadStorage<'a, TriggerActionOnEnter>,
         ReadStorage<'a, TriggerActionOnExit>,
         ReadStorage<'a, TriggerActionOnUse>,
+        ReadStorage<'a, FacingDirection>,
         WriteStorage<'a, GridPosition>,
     );
 
     // RW: For now, putting all action handling in one system. This will probably change in the future.
     fn run(&mut self, data: Self::SystemData) {
-        let (event_queue, player_entity, enter_triggers, exit_triggers, use_triggers, mut positions) =
-            data;
+        let (
+            event_queue,
+            player_entity,
+            enter_triggers,
+            exit_triggers,
+            use_triggers,
+            facing_directions,
+            mut positions,
+        ) = data;
 
         // Process all events, to determine which actions were triggered
         let mut actions: Vec<Action> = vec![];
@@ -50,11 +59,14 @@ impl<'a> System<'a> for ActionSystem {
                         }
                     }
                 }
-                Event::PlayerTriesUse(direction) => {
-                    if let Some(player_position) = positions.get(player_entity.entity) {
+                Event::PlayerTriesUse() => {
+                    if let (Some(player_position), Some(player_facing_direction)) = (
+                        positions.get(player_entity.entity),
+                        facing_directions.get(player_entity.entity),
+                    ) {
                         let use_position = GridPosition {
-                            x: player_position.x + direction.get_delta_x(),
-                            y: player_position.y + direction.get_delta_y(),
+                            x: player_position.x + player_facing_direction.direction.get_delta_x(),
+                            y: player_position.y + player_facing_direction.direction.get_delta_y(),
                         };
                         for (use_action, trigger_pos) in (&use_triggers, &positions).join() {
                             if *trigger_pos == use_position {

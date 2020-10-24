@@ -1,7 +1,7 @@
-use crate::constants::*;
-use specs::Entity;
 use crate::actions::Action;
+use crate::constants::*;
 use macroquad::Texture2D;
+use specs::Entity;
 use specs::{Component, DenseVecStorage};
 
 #[derive(Component)]
@@ -11,7 +11,7 @@ pub struct Player;
 // RW: I just use this so that we don't have a global Entity on our ECS world.
 //     Wrapping it gives the type some identification that makes it harder to mistake what it is.
 pub struct PlayerEntity {
-    pub entity: Entity
+    pub entity: Entity,
 }
 
 #[derive(Component, Copy, Clone, Debug, PartialEq)]
@@ -30,6 +30,17 @@ pub struct SpriteDrawable {
 }
 
 #[derive(Component)]
+pub struct FacingDirection {
+    pub direction: Direction,
+}
+
+//////////////////////////////////////////
+//
+// Components used with Actions system
+//
+//////////////////////////////////////////
+
+#[derive(Component)]
 pub struct TriggerActionOnEnter {
     pub action: Action,
 }
@@ -44,18 +55,27 @@ pub struct TriggerActionOnUse {
     pub action: Action,
 }
 
-// TODO: eventually deprecate this global game state in favor of entity-level components for each state
-#[derive(PartialEq, Copy, Clone, Debug)]
-pub enum GameState {
-    AwaitingInput {
-        player_facing: Direction,
-    },
-    PlayerMoving {
-        delta_x: f32,
-        delta_y: f32,
-        direction: Direction,
-    },
+//////////////////////////////////////////
+//
+// Components used as States (i.e. state machine)
+//
+//////////////////////////////////////////
+
+#[derive(Component)]
+pub struct AwaitingInputState {}
+
+#[derive(Component)]
+pub struct EntityMovingState {
+    pub delta_x: f32,
+    pub delta_y: f32,
+    pub direction: Direction,
 }
+
+//////////////////////////////////////////
+//
+// Helper data structs / logic used by multiple components
+//
+//////////////////////////////////////////
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Direction {
@@ -91,4 +111,3 @@ impl Direction {
         }
     }
 }
-

@@ -1,16 +1,18 @@
-use crate::PlayerEntity;
+use crate::components::AwaitingInputState;
+use crate::components::EntityMovingState;
+use crate::components::FacingDirection;
 use crate::components::GridPosition;
-use crate::components::Player;
 use crate::components::SpriteDrawable;
 use crate::constants::*;
 use crate::events::Event;
 use crate::events::EventQueue;
-use crate::components::GameState;
 use crate::map::GameMap;
+use crate::PlayerEntity;
 use macroquad::get_frame_time;
+use specs::Entities;
+use specs::Entity;
 use specs::Join;
 use specs::ReadExpect;
-use specs::ReadStorage;
 use specs::System;
 use specs::WriteExpect;
 use specs::WriteStorage;
@@ -26,25 +28,39 @@ pub struct PlayerMovingSystem;
 impl<'a> System<'a> for PlayerMovingSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
-        WriteExpect<'a, GameState>,
         WriteExpect<'a, EventQueue>,
         ReadExpect<'a, GameMap>,
         ReadExpect<'a, PlayerEntity>,
-        ReadStorage<'a, Player>,
+        Entities<'a>,
+        WriteStorage<'a, AwaitingInputState>,
+        WriteStorage<'a, EntityMovingState>,
         WriteStorage<'a, GridPosition>,
         WriteStorage<'a, SpriteDrawable>,
+        WriteStorage<'a, FacingDirection>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let delta_time = get_frame_time();
 
-        let (mut game_state, mut event_queue, map, player_entity, players, mut positions, mut drawables) = data;
+        let (
+            mut event_queue,
+            map,
+            player_entity,
+            entities,
+            mut awaiting_input_states,
+            mut entity_moving_states,
+            mut positions,
+            mut drawables,
+            mut facing_directions,
+        ) = data;
 
-        // Handle events: PlayerTriesMove
+        // Handle events: EntityTriesMove
         let mut new_events: Vec<Event> = vec![];
         for event in event_queue.events.iter() {
             if let Event::EntityTriesMove(entity, direction) = event {
-                if let (Some(drawable), Some(position)) = (drawables.get_mut(*entity), positions.get(*entity)) {
+                if let (Some(drawable), Some(position)) =
+                    (drawables.get_mut(*entity), positions.get(*entity))
+                {
                     let delta_x: f32 = direction.get_delta_x();
                     let delta_y: f32 = direction.get_delta_y();
                     let mut moving = false;
@@ -62,121 +78,133 @@ impl<'a> System<'a> for PlayerMovingSystem {
                     if map.is_blocked(new_x, new_y) {
                         moving = false;
                     }
-                    // perform actual move (will be handled below)
-                    if moving {
-                        *game_state = GameState::PlayerMoving {
-                            delta_x,
-                            delta_y,
+
+                    // Regardless of moving, their attempt to move has changed their facing direction
+                    if let Some(facing_direction) = facing_directions.get_mut(*entity) {
+                        *facing_direction = FacingDirection {
                             direction: *direction,
                         };
+                    }
+                    drawable.current_frame = direction.get_player_facing_frame();
+
+                    // if the move was successful, perform actual move (will be handled below)
+                    if moving {
+                        if entity.id() == player_entity.entity.id() {
+                            awaiting_input_states.remove(*entity);
+                        }
+                        entity_moving_states
+                            .insert(
+                                *entity,
+                                EntityMovingState {
+                                    delta_x,
+                                    delta_y,
+                                    direction: *direction,
+                                },
+                            )
+                            .expect("failed to insert entity moving state");
                         new_events.push(Event::PlayerExit(*position));
-                    } else {
-                        // even if player didn't move, we at least need to change their current frame to match their possible change in direction
-                        drawable.current_frame = direction.get_player_facing_frame();
-                        *game_state = GameState::AwaitingInput {
-                            player_facing: *direction,
-                        };
                     }
                 }
             }
         }
 
         // Handle player that is already moving.
-        if let GameState::PlayerMoving {
-            delta_x,
-            delta_y,
-            direction,
-        } = *game_state
+        // TODO: The below code is pretty complicated. It'd be a lot clearer what was going on if we had a Tween class.
+        // That might also allow removing the duplication because the distinct part of each of the below is mostly the directionality differences.
+        let mut entities_done_moving: Vec<Entity> = vec![];
+        for (entity, moving_state, position, drawable) in (
+            &entities,
+            &mut entity_moving_states,
+            &mut positions,
+            &mut drawables,
+        )
+            .join()
         {
-            // TODO: The below code is pretty complicated. It'd be a lot clearer what was going on if we had a Tween class.
-            // That might also allow removing the duplication because the distinct part of each of the below is mostly the directionality differences.
-            for (_player, position, drawable) in (&players, &mut positions, &mut drawables).join() {
-                if delta_y > 0. {
-                    // down
-                    // the difference between 1 and current delta_y is how much we've moved so far.
-                    // we use that to determine the current animation frame and to tween the actual movement of position
-                    let elapsed_duration = (1. - delta_y) * PLAYER_MOVEMENT_DURATION + delta_time;
-                    let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                    drawable.current_frame = PLAYER_DOWN_FACING_FRAME
-                        + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
-                    position.y += movement_this_frame;
-                    let mut new_delta_y = delta_y - movement_this_frame;
-                    if new_delta_y < 0. {
-                        // finished moving
-                        new_delta_y = 0.;
-                        drawable.current_frame = PLAYER_DOWN_FACING_FRAME;
-                        position.y = position.y.round();
-                    }
-                    *game_state = GameState::PlayerMoving {
-                        delta_x: 0.,
-                        delta_y: new_delta_y,
-                        direction,
-                    };
-                } else if delta_y < 0. {
-                    // up
-                    let elapsed_duration = (1. - -delta_y) * PLAYER_MOVEMENT_DURATION + delta_time;
-                    let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                    drawable.current_frame = PLAYER_UP_FACING_FRAME
-                        + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
-                    position.y -= movement_this_frame;
-                    let mut new_delta_y = delta_y + movement_this_frame;
-                    if new_delta_y > 0. {
-                        // finished moving
-                        new_delta_y = 0.;
-                        drawable.current_frame = PLAYER_UP_FACING_FRAME;
-                        position.y = position.y.round();
-                    }
-                    *game_state = GameState::PlayerMoving {
-                        delta_x: 0.,
-                        delta_y: new_delta_y,
-                        direction,
-                    };
-                } else if delta_x > 0. {
-                    // right
-                    let elapsed_duration = (1. - delta_x) * PLAYER_MOVEMENT_DURATION + delta_time;
-                    let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                    drawable.current_frame = PLAYER_RIGHT_FACING_FRAME
-                        + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
-                    position.x += movement_this_frame;
-                    let mut new_delta_x = delta_x - movement_this_frame;
-                    if new_delta_x < 0. {
-                        // finished moving
-                        new_delta_x = 0.;
-                        drawable.current_frame = PLAYER_RIGHT_FACING_FRAME;
-                        position.x = position.x.round();
-                    }
-                    *game_state = GameState::PlayerMoving {
-                        delta_x: new_delta_x,
-                        delta_y: 0.,
-                        direction,
-                    };
-                } else if delta_x < 0. {
-                    // left
-                    let elapsed_duration = (1. - -delta_x) * PLAYER_MOVEMENT_DURATION + delta_time;
-                    let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
-                    drawable.current_frame = PLAYER_LEFT_FACING_FRAME
-                        + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
-                    position.x -= movement_this_frame;
-                    let mut new_delta_x = delta_x + movement_this_frame;
-                    if new_delta_x > 0. {
-                        // finished moving
-                        new_delta_x = 0.;
-                        drawable.current_frame = PLAYER_LEFT_FACING_FRAME;
-                        position.x = position.x.round();
-                    }
-                    *game_state = GameState::PlayerMoving {
-                        delta_x: new_delta_x,
-                        delta_y: 0.,
-                        direction,
-                    };
-                } else {
-                    // once delta_x and delta_y are 0, the movement is over
-                    *game_state = GameState::AwaitingInput {
-                        player_facing: direction,
-                    };
+            if moving_state.delta_y > 0. {
+                // down
+                // the difference between 1 and current delta_y is how much we've moved so far.
+                // we use that to determine the current animation frame and to tween the actual movement of position
+                let elapsed_duration =
+                    (1. - moving_state.delta_y) * PLAYER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
+                drawable.current_frame = PLAYER_DOWN_FACING_FRAME
+                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                position.y += movement_this_frame;
+                let mut new_delta_y = moving_state.delta_y - movement_this_frame;
+                if new_delta_y < 0. {
+                    // finished moving
+                    new_delta_y = 0.;
+                    drawable.current_frame = PLAYER_DOWN_FACING_FRAME;
+                    position.y = position.y.round();
+                }
+                moving_state.delta_y = new_delta_y;
+            } else if moving_state.delta_y < 0. {
+                // up
+                let elapsed_duration =
+                    (1. - -moving_state.delta_y) * PLAYER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
+                drawable.current_frame = PLAYER_UP_FACING_FRAME
+                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                position.y -= movement_this_frame;
+                let mut new_delta_y = moving_state.delta_y + movement_this_frame;
+                if new_delta_y > 0. {
+                    // finished moving
+                    new_delta_y = 0.;
+                    drawable.current_frame = PLAYER_UP_FACING_FRAME;
+                    position.y = position.y.round();
+                }
+                moving_state.delta_y = new_delta_y;
+            } else if moving_state.delta_x > 0. {
+                // right
+                let elapsed_duration =
+                    (1. - moving_state.delta_x) * PLAYER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
+                drawable.current_frame = PLAYER_RIGHT_FACING_FRAME
+                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                position.x += movement_this_frame;
+                let mut new_delta_x = moving_state.delta_x - movement_this_frame;
+                if new_delta_x < 0. {
+                    // finished moving
+                    new_delta_x = 0.;
+                    drawable.current_frame = PLAYER_RIGHT_FACING_FRAME;
+                    position.x = position.x.round();
+                }
+                moving_state.delta_x = new_delta_x;
+            } else if moving_state.delta_x < 0. {
+                // left
+                let elapsed_duration =
+                    (1. - -moving_state.delta_x) * PLAYER_MOVEMENT_DURATION + delta_time;
+                let movement_this_frame = delta_time / PLAYER_MOVEMENT_DURATION;
+                drawable.current_frame = PLAYER_LEFT_FACING_FRAME
+                    + (elapsed_duration / PLAYER_MOVEMENT_DURATION * 4.).floor();
+                position.x -= movement_this_frame;
+                let mut new_delta_x = moving_state.delta_x + movement_this_frame;
+                if new_delta_x > 0. {
+                    // finished moving
+                    new_delta_x = 0.;
+                    drawable.current_frame = PLAYER_LEFT_FACING_FRAME;
+                    position.x = position.x.round();
+                }
+                moving_state.delta_x = new_delta_x;
+            } else {
+                // once delta_x and delta_y are 0, the movement is over
+                entities_done_moving.push(entity);
+
+                // TODO: make this more generic to non-player characters
+                if entity.id() == player_entity.entity.id() {
+                    // only actual player has Awaiting Input state.
+                    // NPCs probably have a different default state, which we'll need to handle later
+                    awaiting_input_states
+                        .insert(player_entity.entity, AwaitingInputState {})
+                        .expect("failed to insert player AwaitingInputState");
+                    // and only player currently tracks enter events
                     new_events.push(Event::PlayerEntered(*position));
                 }
             }
+        }
+
+        for entity in entities_done_moving {
+            entity_moving_states.remove(entity);
         }
 
         // Add any events that occurred from TryMove or actual movement

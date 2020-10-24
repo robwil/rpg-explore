@@ -1,14 +1,16 @@
-use crate::components::PlayerEntity;
 use crate::actions::Action;
+use crate::components::AwaitingInputState;
+use crate::components::Direction;
+use crate::components::EntityMovingState;
+use crate::components::FacingDirection;
 use crate::components::GridPosition;
 use crate::components::Player;
+use crate::components::PlayerEntity;
 use crate::components::SpriteDrawable;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
 use crate::events::EventQueue;
-use crate::components::Direction;
-use crate::components::GameState;
 use crate::map::GameMap;
 use crate::systems::ActionSystem;
 use crate::systems::InputSystem;
@@ -44,6 +46,9 @@ async fn main() {
     world.register::<TriggerActionOnEnter>();
     world.register::<TriggerActionOnExit>();
     world.register::<TriggerActionOnUse>();
+    world.register::<FacingDirection>();
+    world.register::<AwaitingInputState>();
+    world.register::<EntityMovingState>();
 
     // Create entities
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
@@ -58,6 +63,10 @@ async fn main() {
             row: 0.,
             current_frame: 8.,
         })
+        .with(FacingDirection {
+            direction: Direction::Down,
+        })
+        .with(AwaitingInputState {})
         .build();
     // Top door
     world
@@ -102,18 +111,20 @@ async fn main() {
             row: 2.,
             current_frame: 8.,
         })
+        .with(FacingDirection {
+            direction: Direction::Down,
+        })
         .build();
 
     // Insert global resources
     let map = GameMap::new().await;
     world.insert(map);
-    world.insert(GameState::AwaitingInput {
-        player_facing: Direction::Down,
-    });
     world.insert(EventQueue {
         ..Default::default()
     });
-    world.insert(PlayerEntity{ entity: player_entity });
+    world.insert(PlayerEntity {
+        entity: player_entity,
+    });
 
     let mut rendering_system = RenderingSystem {
         ..Default::default()
@@ -121,6 +132,8 @@ async fn main() {
 
     loop {
         clear_background(BLACK);
+
+        // TODO: switch to use SPECS dispatcher here (https://specs.amethyst.rs/docs/tutorials/03_dispatcher.html)
 
         let mut input_system = InputSystem {};
         input_system.run_now(&world);
