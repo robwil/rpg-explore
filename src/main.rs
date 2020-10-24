@@ -30,6 +30,7 @@ mod constants;
 mod events;
 mod map;
 mod systems;
+mod util;
 
 fn window_conf() -> Conf {
     Conf {

@@ -8,6 +8,7 @@ use crate::constants::*;
 use crate::events::Event;
 use crate::events::EventQueue;
 use crate::map::GameMap;
+use crate::util::f32_eq;
 use crate::PlayerEntity;
 use macroquad::get_frame_time;
 use specs::Entities;
@@ -86,7 +87,9 @@ impl<'a> System<'a> for CharacterMovingSystem {
                     for (other_entity_position, _blocks_movement) in
                         (&positions, &blocks_movement).join()
                     {
-                        if other_entity_position.x == new_x && other_entity_position.y == new_y {
+                        if f32_eq(other_entity_position.x, new_x)
+                            && f32_eq(other_entity_position.y, new_y)
+                        {
                             moving = false;
                         }
                     }
@@ -94,10 +97,13 @@ impl<'a> System<'a> for CharacterMovingSystem {
                     for (other_entity_position, entity_moving_state) in
                         (&positions, &entity_moving_states).join()
                     {
-                        if (other_entity_position.x + entity_moving_state.delta_x).round() == new_x
-                            || (other_entity_position.y + entity_moving_state.delta_y).round()
-                                == new_y
-                        {
+                        if f32_eq(
+                            (other_entity_position.x + entity_moving_state.delta_x).round(),
+                            new_x,
+                        ) && f32_eq(
+                            (other_entity_position.y + entity_moving_state.delta_y).round(),
+                            new_y,
+                        ) {
                             moving = false;
                         }
                     }

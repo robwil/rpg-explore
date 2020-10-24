@@ -15,7 +15,6 @@ use macroquad::DrawTextureParams;
 use macroquad::Rect;
 use macroquad::Vec2;
 use macroquad::WHITE;
-use specs::Entity;
 use specs::Join;
 use specs::ReadExpect;
 use specs::{ReadStorage, System};
