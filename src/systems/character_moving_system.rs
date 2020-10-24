@@ -17,15 +17,15 @@ use specs::System;
 use specs::WriteExpect;
 use specs::WriteStorage;
 
-// This system is responsible for player movement.
+// This system is responsible for all character movement.
 // Currently, this includes:
-// 1) listening for PlayerTriesMove event and initiate GameState::PlayerMoving if moving to a valid location
-// 2) handling the animation that occurs when the game enters GameState::PlayerMoving
-// 3) firing events for PlayerExit and PlayerEnter for the old and new positions
-// TODO: rename to CharacterMovementSystem
-pub struct PlayerMovingSystem;
+// 1) listening for EntityTriesMove event and puts that entity in EntityMovingState if moving to a valid location
+// 2) handling the animation that occurs when an entity is in EntityMovingState
+// 3) fires events for PlayerExit and PlayerEnter for the old and new positions, if the entity that moved was the PlayerEntity
 
-impl<'a> System<'a> for PlayerMovingSystem {
+pub struct CharacterMovingSystem;
+
+impl<'a> System<'a> for CharacterMovingSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         WriteExpect<'a, EventQueue>,
@@ -79,7 +79,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                         moving = false;
                     }
 
-                    // Regardless of moving, their attempt to move has changed their facing direction
+                    // Regardless of actually moving, their attempt to move has changed their facing direction
                     if let Some(facing_direction) = facing_directions.get_mut(*entity) {
                         *facing_direction = FacingDirection {
                             direction: *direction,
@@ -87,7 +87,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
                     }
                     drawable.current_frame = direction.get_player_facing_frame();
 
-                    // if the move was successful, perform actual move (will be handled below)
+                    // if the move was successful, perform actual move (will be handled below) by adding EntityMovingState to the entity
                     if moving {
                         if entity.id() == player_entity.entity.id() {
                             awaiting_input_states.remove(*entity);
@@ -203,6 +203,7 @@ impl<'a> System<'a> for PlayerMovingSystem {
             }
         }
 
+        // remove EntityMovingState from any entities that are done their moving animation
         for entity in entities_done_moving {
             entity_moving_states.remove(entity);
         }

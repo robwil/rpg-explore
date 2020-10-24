@@ -13,8 +13,8 @@ use crate::components::TriggerActionOnUse;
 use crate::events::EventQueue;
 use crate::map::GameMap;
 use crate::systems::ActionSystem;
+use crate::systems::CharacterMovingSystem;
 use crate::systems::InputSystem;
-use crate::systems::PlayerMovingSystem;
 use crate::systems::RenderingSystem;
 use macroquad::*;
 use specs::RunNow;
@@ -138,7 +138,7 @@ async fn main() {
         let mut input_system = InputSystem {};
         input_system.run_now(&world);
 
-        let mut player_moving_system = PlayerMovingSystem {};
+        let mut player_moving_system = CharacterMovingSystem {};
         player_moving_system.run_now(&world);
 
         let mut action_system = ActionSystem {};
