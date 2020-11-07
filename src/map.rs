@@ -1,5 +1,4 @@
-use macroquad::load_file;
-use macroquad::load_texture;
+use macroquad::prelude::*;
 use macroquad_tiled::load_map;
 use macroquad_tiled::Map;
 

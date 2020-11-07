@@ -7,14 +7,14 @@ use crate::constants::LEVEL_HEIGHT;
 use crate::constants::LEVEL_WIDTH;
 use crate::map::GameMap;
 use core::cmp::Ordering::Equal;
-use macroquad::draw_text;
-use macroquad::draw_texture_ex;
-use macroquad::get_frame_time;
-use macroquad::get_time;
-use macroquad::DrawTextureParams;
-use macroquad::Rect;
-use macroquad::Vec2;
-use macroquad::WHITE;
+use macroquad::text::draw_text;
+use macroquad::texture::draw_texture_ex;
+use macroquad::time::get_frame_time;
+use macroquad::time::get_time;
+use macroquad::texture::DrawTextureParams;
+use macroquad::prelude::Rect;
+use macroquad::prelude::vec2;
+use macroquad::prelude::WHITE;
 use specs::Join;
 use specs::ReadExpect;
 use specs::{ReadStorage, System};
@@ -79,7 +79,7 @@ impl<'a> System<'a> for RenderingSystem {
                         drawable.tile_width,
                         drawable.tile_height,
                     )),
-                    dest_size: Some(Vec2::new(
+                    dest_size: Some(vec2(
                         drawable.tile_width * GLOBAL_MULTIPLIER,
                         drawable.tile_height * GLOBAL_MULTIPLIER,
                     )),

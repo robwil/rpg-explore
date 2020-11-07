@@ -1,6 +1,6 @@
 use crate::actions::Action;
 use crate::constants::*;
-use macroquad::Texture2D;
+use macroquad::texture::Texture2D;
 use specs::Entity;
 use specs::{Component, DenseVecStorage};
 

@@ -4,7 +4,7 @@ use crate::components::WaitingState;
 use crate::events::Event;
 use crate::events::EventQueue;
 use crate::EntityMovingState;
-use macroquad::get_frame_time;
+use macroquad::time::get_frame_time;
 use quad_rand as qrand;
 use specs::Entities;
 use specs::Join;

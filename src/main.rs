@@ -20,9 +20,14 @@ use crate::systems::CharacterMovingSystem;
 use crate::systems::InputSystem;
 use crate::systems::PlanStrollSystem;
 use crate::systems::RenderingSystem;
-use macroquad::*;
 use specs::DispatcherBuilder;
 use specs::{Builder, World, WorldExt};
+use macroquad::prelude::*;
+use megaui_macroquad::{
+    draw_megaui, draw_window,
+    megaui::{self, hash, widgets::Group, Drag, Ui, Vector2},
+    WindowParams,
+};
 
 mod actions;
 mod components;
@@ -191,6 +196,22 @@ async fn main() {
         }
         event_queue.events = (*event_queue.new_events).to_vec();
         event_queue.new_events.clear();
+
+        // draw UI
+        draw_window(
+            hash!(),
+            glam::vec2(10., 10.),
+            glam::vec2(50., 20.),
+            WindowParams {
+                titlebar: false,
+                ..Default::default()
+            },
+            |ui| {
+                ui.label(None, "Hello!");
+            },
+        );
+
+        draw_megaui();
 
         next_frame().await;
     }
