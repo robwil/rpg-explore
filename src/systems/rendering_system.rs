@@ -7,14 +7,14 @@ use crate::constants::LEVEL_HEIGHT;
 use crate::constants::LEVEL_WIDTH;
 use crate::map::GameMap;
 use core::cmp::Ordering::Equal;
+use macroquad::prelude::vec2;
+use macroquad::prelude::Rect;
+use macroquad::prelude::WHITE;
 use macroquad::text::draw_text;
 use macroquad::texture::draw_texture_ex;
+use macroquad::texture::DrawTextureParams;
 use macroquad::time::get_frame_time;
 use macroquad::time::get_time;
-use macroquad::texture::DrawTextureParams;
-use macroquad::prelude::Rect;
-use macroquad::prelude::vec2;
-use macroquad::prelude::WHITE;
 use specs::Join;
 use specs::ReadExpect;
 use specs::{ReadStorage, System};
@@ -40,7 +40,7 @@ impl<'a> System<'a> for RenderingSystem {
             self.last_fps = (1. / get_frame_time()).round();
             self.last_fps_time = get_time();
         }
-        draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 20.0, WHITE);
+        draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 32.0, WHITE);
 
         // draw map
         // TODO: instead of constants for the LEVEL_WIDTH/HEIGHT, and hard-coding tilelayer1/tilelayer2,

@@ -53,9 +53,9 @@ checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
 
 [[package]]
 name = "cc"
-version = "1.0.61"
+version = "1.0.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed67cbde08356238e75fc4656be4749481eeffb09e19f320a25237d5221c985d"
+checksum = "f1770ced377336a88a67c473594ccc14eca6f4559217c34f64aac8f83d641b40"
 
 [[package]]
 name = "cfg-if"
@@ -256,8 +256,7 @@ checksum = "60302e4db3a61da70c0cb7991976248362f30319e88850c487b9b95bbf059e00"
 [[package]]
 name = "megaui"
 version = "0.2.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9250f948327766583b7c633bc7f3222e20a9848f15c6d7b01c130e5e8a0917d7"
+source = "git+https://github.com/robwil/megaui?branch=font-size#fe0e6c292b00b17f87d4191f1f4af51b98331b0c"
 dependencies = [
  "miniquad_text_rusttype",
 ]
@@ -265,7 +264,7 @@ dependencies = [
 [[package]]
 name = "megaui-macroquad"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/megaui-macroquad#0295987dbf00298181b693ee31466e0b492164e8"
+source = "git+https://github.com/robwil/megaui-macroquad?branch=font-size#a6500d620af7ec52b2d5a3971f965a160cae29b7"
 dependencies = [
  "macroquad 0.3.0-alpha.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "megaui",
