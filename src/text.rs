@@ -1,5 +1,19 @@
 use crate::FontAtlas;
 
+pub fn chunk_text(
+    text: &str,
+    wrap_width: f32,
+    lines_per_chunk: usize,
+    font_atlas: &FontAtlas,
+) -> Vec<String> {
+    let wrapped_text = wrap_text(text, wrap_width, font_atlas);
+    let lines: Vec<&str> = wrapped_text.split("\n").collect();
+    lines
+        .chunks(lines_per_chunk)
+        .map(|f| f.join("\n"))
+        .collect()
+}
+
 pub fn wrap_text(text: &str, wrap_width: f32, font_atlas: &FontAtlas) -> String {
     let words = text.split(" ");
     let space_width = character_width(font_atlas, ' ');
@@ -82,5 +96,13 @@ mod tests {
         assert_eq!(wrap_text("abc", 600., &font_atlas()), "abc");
         assert_eq!(wrap_text("Here is some long text that should go on to the next line. You see, this game is starting to get some story.", 600., &font_atlas()), 
             "Here is some long text that should go on to the next\nline. You see, this game is starting to get some story.");
+        assert_eq!(wrap_text("Here is some long text that should go on to the next line. You see, this game is starting to get some story.", 100., &font_atlas()), 
+            "Here is\nsome long\ntext that\nshould go\non to the\nnext\nline. You\nsee, this\ngame is\nstarting\nto get\nsome\nstory.");
+    }
+
+    #[test]
+    fn test_chunk_text() {
+        assert_eq!(chunk_text("Here is some long text that should go on to the next line. You see, this game is starting to get some story.", 100., 3, &font_atlas()), 
+            vec!["Here is\nsome long\ntext that", "should go\non to the\nnext", "line. You\nsee, this\ngame is", "starting\nto get\nsome", "story."]);
     }
 }

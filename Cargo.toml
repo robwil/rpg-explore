@@ -10,7 +10,7 @@ edition = "2018"
 # Macroquad and related dependencies
 macroquad = { git = "https://github.com/not-fl3/macroquad", rev = "5bcdbf8" }
 macroquad-tiled = { git = "https://github.com/not-fl3/macroquad", rev = "5bcdbf8" }
-megaui-macroquad = { git = "https://github.com/robwil/megaui-macroquad", branch = "font-size" }
+megaui-macroquad = { path = "../megaui-macroquad" }
 quad-rand = "0.1.1"
 # default-features = false to avoid parallel multi-threading (which breaks WASM)
 specs = { version = "0.16.1", features = ["specs-derive"], default-features = false }

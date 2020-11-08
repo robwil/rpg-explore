@@ -206,24 +206,9 @@ dependencies = [
  "fontdue",
  "glam",
  "image",
- "macroquad_macro 0.1.0",
+ "macroquad_macro",
  "miniquad",
- "quad-gl 0.2.10 (git+https://github.com/not-fl3/macroquad?rev=5bcdbf8)",
- "quad-rand",
-]
-
-[[package]]
-name = "macroquad"
-version = "0.3.0-alpha.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ab6c32926312447769d2e5675c412cc304212cebe30de6b1a460c371e9816fd"
-dependencies = [
- "fontdue",
- "glam",
- "image",
- "macroquad_macro 0.1.1",
- "miniquad",
- "quad-gl 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quad-gl",
  "quad-rand",
 ]
 
@@ -232,7 +217,7 @@ name = "macroquad-tiled"
 version = "0.1.0"
 source = "git+https://github.com/not-fl3/macroquad?rev=5bcdbf8#5bcdbf8cadfe141267a731671c912bcf496ef0c0"
 dependencies = [
- "macroquad 0.3.0-alpha.9 (git+https://github.com/not-fl3/macroquad?rev=5bcdbf8)",
+ "macroquad",
  "nanoserde",
 ]
 
@@ -240,12 +225,6 @@ dependencies = [
 name = "macroquad_macro"
 version = "0.1.0"
 source = "git+https://github.com/not-fl3/macroquad?rev=5bcdbf8#5bcdbf8cadfe141267a731671c912bcf496ef0c0"
-
-[[package]]
-name = "macroquad_macro"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "130d84f4402225e7e343256f519ff47f3cd439031fa76ef79d92f2f4c6389223"
 
 [[package]]
 name = "maybe-uninit"
@@ -264,9 +243,8 @@ dependencies = [
 [[package]]
 name = "megaui-macroquad"
 version = "0.1.1"
-source = "git+https://github.com/robwil/megaui-macroquad?branch=font-size#a6500d620af7ec52b2d5a3971f965a160cae29b7"
 dependencies = [
- "macroquad 0.3.0-alpha.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "macroquad",
  "megaui",
 ]
 
@@ -413,17 +391,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "quad-gl"
-version = "0.2.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c743d7b406973c0c314c3822722b0876a4f7ed99fe4b6ab70e32ea83ab0546d"
-dependencies = [
- "glam",
- "image",
- "miniquad",
-]
-
-[[package]]
 name = "quad-rand"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -442,7 +409,7 @@ dependencies = [
 name = "rpg-explore"
 version = "0.1.0"
 dependencies = [
- "macroquad 0.3.0-alpha.9 (git+https://github.com/not-fl3/macroquad?rev=5bcdbf8)",
+ "macroquad",
  "macroquad-tiled",
  "megaui-macroquad",
  "quad-rand",

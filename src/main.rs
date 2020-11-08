@@ -187,28 +187,22 @@ async fn main() {
         .build();
 
     // setup UI style
-    let font_atlas = FontAtlas::new(
-        &include_bytes!("../../megaui/assets/ProggyClean.ttf")[..],
-        20,
-        FontAtlas::ascii_character_list(),
-    )
-    .unwrap();
+    let font_bytes = &include_bytes!("../assets/fonts/Roboto-Bold.ttf")[..];
+    let font_size = 24;
+    let font_atlas =
+        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
     set_font_atlas(font_atlas);
     set_ui_style(Style {
         title_height: 32.,
         margin: 12.,
-        window_background_focused: Color::from_rgb(0, 0, 205),
+        window_background_focused: Color::from_rgb(0, 0, 150),
         focused_title: Color::from_rgb(255, 255, 255),
         focused_text: Color::from_rgb(255, 255, 255),
         ..Default::default()
     });
     // need to create second font_atlas for use below, since above one gets moved into UI code
-    let font_atlas = FontAtlas::new(
-        &include_bytes!("../../megaui/assets/ProggyClean.ttf")[..],
-        20,
-        FontAtlas::ascii_character_list(),
-    )
-    .unwrap();
+    let font_atlas =
+        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
 
     loop {
         clear_background(BLACK);
@@ -240,8 +234,8 @@ async fn main() {
                 ..Default::default()
             },
             |ui| {
-                Label::new(wrap_text("Here is some long text that should go on to the next line. You see, this game is starting to get some story.", 760., &font_atlas2))
-                    .multiline(32.)
+                Label::new(wrap_text("Here is some long text that should go on to the next line. You see, this game is starting to get some story. And here is some more text that should use the last line.", 760., &font_atlas))
+                    .multiline(24.)
                     .position(None)
                     .ui(ui);
             },
