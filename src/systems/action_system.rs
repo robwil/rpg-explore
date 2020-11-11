@@ -7,14 +7,11 @@ use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
 use crate::events::Event;
 use crate::events::EventQueue;
-use crate::ui::DialogBox;
 use crate::ui::UiState;
-use specs::Entities;
 use specs::Join;
 use specs::ReadExpect;
 use specs::ReadStorage;
 use specs::System;
-use specs::Write;
 use specs::WriteExpect;
 use specs::WriteStorage;
 

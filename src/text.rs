@@ -7,7 +7,7 @@ pub fn chunk_text(
     font_atlas: &FontAtlas,
 ) -> Vec<String> {
     let wrapped_text = wrap_text(text, wrap_width, font_atlas);
-    let lines: Vec<&str> = wrapped_text.split("\n").collect();
+    let lines: Vec<&str> = wrapped_text.split('\n').collect();
     lines
         .chunks(lines_per_chunk)
         .map(|f| f.join("\n"))
@@ -15,7 +15,7 @@ pub fn chunk_text(
 }
 
 pub fn wrap_text(text: &str, wrap_width: f32, font_atlas: &FontAtlas) -> String {
-    let words = text.split(" ");
+    let words = text.split(' ');
     let space_width = character_width(font_atlas, ' ');
     let mut lines = vec![];
     let mut current_line = vec![];
