@@ -42,6 +42,10 @@ impl<'a> System<'a> for RenderingSystem {
         }
         draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 32.0, WHITE);
 
+        // draw controls for now
+        draw_text("WASD - movement", 500., 20., 32., WHITE);
+        draw_text("Space - use/interact", 500., 50., 32., WHITE);
+
         // draw map
         // TODO: instead of constants for the LEVEL_WIDTH/HEIGHT, and hard-coding tilelayer1/tilelayer2,
         //       we could extract the concept of a Level and store these things.

@@ -1,3 +1,4 @@
+use crate::constants::FONT_SIZE;
 use crate::actions::Action;
 use crate::components::AwaitingInputState;
 use crate::components::BlocksMovement;
@@ -12,6 +13,7 @@ use crate::components::Strolling;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
+use crate::constants::UI_TEXTURE_CARET;
 use crate::events::EventQueue;
 use crate::map::GameMap;
 use crate::megaui::Style;
@@ -21,10 +23,12 @@ use crate::systems::InputSystem;
 use crate::systems::PlanStrollSystem;
 use crate::systems::RenderingSystem;
 use crate::systems::UiSystem;
+use crate::ui::DialogBoxConf;
 use crate::ui::UiState;
 use macroquad::prelude::*;
 use megaui::Color;
 use megaui::FontAtlas;
+use megaui_macroquad::set_megaui_texture;
 use megaui_macroquad::set_ui_style;
 use megaui_macroquad::{
     draw_megaui,
@@ -55,15 +59,18 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    // load global textures
+    let texture = load_texture("assets/texture/continue_caret.png").await;
+    set_megaui_texture(UI_TEXTURE_CARET, texture);
+
     // setup UI style
     let font_bytes = &include_bytes!("../assets/fonts/Roboto-Bold.ttf")[..];
-    let font_size = 24;
     let font_atlas =
-        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
+        FontAtlas::new(font_bytes, FONT_SIZE, FontAtlas::ascii_character_list()).unwrap();
     set_font_atlas(font_atlas);
     set_ui_style(Style {
         title_height: 32.,
-        margin: 12.,
+        margin: 5.,
         window_background_focused: Color::from_rgb(0, 0, 150),
         focused_title: Color::from_rgb(255, 255, 255),
         focused_text: Color::from_rgb(255, 255, 255),
@@ -71,7 +78,7 @@ async fn main() {
     });
     // need to recreate font_atlas that got moved above, so we can use it below
     let font_atlas =
-        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
+        FontAtlas::new(font_bytes, FONT_SIZE, FontAtlas::ascii_character_list()).unwrap();
 
     // Setup specs world
     let mut world = World::new();
@@ -89,7 +96,8 @@ async fn main() {
         .create_entity()
         .with(Player {})
         .with(BlocksMovement {})
-        .with(GridPosition { x: 9., y: 3. })
+        // .with(GridPosition { x: 9., y: 3. })
+        .with(GridPosition { x: 2., y: 4. })
         .with(SpriteDrawable {
             texture: character_texture,
             tile_width: 16.,
@@ -170,7 +178,15 @@ async fn main() {
         .with(GridPosition { x: 10., y: 3. })
         .with(BlocksMovement {})
         .with(TriggerActionOnUse {
-            action: Action::ShowDialog("the urn is full of snakes!".to_owned()),
+            action: Action::ShowSimpleDialog("The urn is full of snakes!".to_owned()),
+        })
+        .build();
+    // Banner
+    world
+        .create_entity()
+        .with(GridPosition { x: 8., y: 2. })
+        .with(TriggerActionOnUse {
+            action: Action::ShowSimpleDialog("When, O Catiline, do you mean to cease abusing our patience? How long is that madness of yours still to mock us? When is there to be an end of that unbridled audacity of yours, swaggering about as it does now? Do not the nightly guards placed on the Palatine Hill -- do not the watches posted throughout the city -- does not the alarm of the people, and the union of all good men -- does not the precaution taken of assembling the senate in this most defensible place -- do not the looks and countenances of this venerable body here present, have any effect upon you? Do you not feel that your plans are detected? Do you not see that your conspiracy is already arrested and rendered powerless by the knowledge which every one here possesses of it? What is there that you did last night, what the night before -- where is it that you were -- who was there that you summoned to meet you -- what design was there which was adopted by you, with which you think that any one of us is unacquainted?".to_owned()),
         })
         .build();
     // Standing NPC
@@ -187,6 +203,13 @@ async fn main() {
         })
         .with(FacingDirection {
             direction: Direction::Down,
+        })
+        .with(TriggerActionOnUse {
+            action: Action::ShowDialog(DialogBoxConf {
+                message: "Welcome to town. Do you like it so far?".to_owned(),
+                title: Some("Innkeeper".to_owned()),
+                ..Default::default()
+            }),
         })
         .build();
     // Strolling NPC

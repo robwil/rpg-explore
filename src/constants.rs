@@ -1,6 +1,7 @@
 pub const GLOBAL_MULTIPLIER: f32 = 2.; // Global multiplier is the 2x scale we use for all the tiles, both maps and sprites.
 pub const GLOBAL_OFFSET_X: f32 = 50.;
 pub const GLOBAL_OFFSET_Y: f32 = 50.;
+pub const FONT_SIZE: u32 = 24;
 
 pub const LEVEL_WIDTH: f32 = 14.;
 pub const LEVEL_HEIGHT: f32 = 14.;
@@ -12,3 +13,10 @@ pub const CHARACTER_DOWN_FACING_FRAME: f32 = 8.;
 pub const CHARACTER_UP_FACING_FRAME: f32 = 0.;
 pub const CHARACTER_RIGHT_FACING_FRAME: f32 = 4.;
 pub const CHARACTER_LEFT_FACING_FRAME: f32 = 12.;
+
+// these are the raw texture IDs used by MegaUI
+pub const UI_TEXTURE_CARET: u32 = 1000;
+
+// Dialog box constants
+pub const DIALOG_BOX_WIDTH: f32 = 780.;
+pub const DIALOG_BOX_HEIGHT: f32 = 120.;

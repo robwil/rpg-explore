@@ -7,6 +7,7 @@ use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
 use crate::events::Event;
 use crate::events::EventQueue;
+use crate::ui::DialogBoxConf;
 use crate::ui::UiState;
 use specs::Join;
 use specs::ReadExpect;
@@ -93,8 +94,14 @@ impl<'a> System<'a> for ActionSystem {
                         player_position.y = pos.y;
                     }
                 }
-                Action::ShowDialog(message) => {
-                    ui_state.create_dialog_box(&message, None, &[]);
+                Action::ShowSimpleDialog(message) => {
+                    ui_state.create_dialog_box(DialogBoxConf {
+                        message,
+                        ..Default::default()
+                    });
+                }
+                Action::ShowDialog(dialog_conf) => {
+                    ui_state.create_dialog_box(dialog_conf);
                 }
                 Action::PrintMessage(message) => {
                     println!("PRINT MESSAGE action: {}", message);
