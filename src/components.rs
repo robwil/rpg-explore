@@ -16,6 +16,7 @@ pub struct PlayerEntity {
     pub entity: Entity,
 }
 
+// GridPosition is used to place entities on the map, using grid coordinates
 #[derive(Component, Copy, Clone, Debug, PartialEq)]
 pub struct GridPosition {
     pub x: f32,

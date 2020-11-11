@@ -12,25 +12,24 @@ use crate::components::Strolling;
 use crate::components::TriggerActionOnEnter;
 use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
-use crate::components::WaitingState;
 use crate::events::EventQueue;
 use crate::map::GameMap;
-use crate::megaui::widgets::Label;
 use crate::megaui::Style;
 use crate::systems::ActionSystem;
 use crate::systems::CharacterMovingSystem;
 use crate::systems::InputSystem;
 use crate::systems::PlanStrollSystem;
 use crate::systems::RenderingSystem;
-use crate::text::wrap_text;
+use crate::systems::UiSystem;
+use crate::ui::UiState;
 use macroquad::prelude::*;
 use megaui::Color;
 use megaui::FontAtlas;
 use megaui_macroquad::set_ui_style;
 use megaui_macroquad::{
-    draw_megaui, draw_window,
-    megaui::{self, hash},
-    set_font_atlas, WindowParams,
+    draw_megaui,
+    megaui::{self},
+    set_font_atlas,
 };
 use specs::DispatcherBuilder;
 use specs::{Builder, World, WorldExt};
@@ -42,6 +41,7 @@ mod events;
 mod map;
 mod systems;
 mod text;
+mod ui;
 mod util;
 
 fn window_conf() -> Conf {
@@ -55,22 +55,35 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    // setup UI style
+    let font_bytes = &include_bytes!("../assets/fonts/Roboto-Bold.ttf")[..];
+    let font_size = 24;
+    let font_atlas =
+        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
+    set_font_atlas(font_atlas);
+    set_ui_style(Style {
+        title_height: 32.,
+        margin: 12.,
+        window_background_focused: Color::from_rgb(0, 0, 150),
+        focused_title: Color::from_rgb(255, 255, 255),
+        focused_text: Color::from_rgb(255, 255, 255),
+        ..Default::default()
+    });
+    // need to recreate font_atlas that got moved above, so we can use it below
+    let font_atlas =
+        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
+
     // Setup specs world
     let mut world = World::new();
-    world.register::<GridPosition>();
-    world.register::<SpriteDrawable>();
+    // We only need to explicitly register the components used by Player entity, the rest get setup by dispatcher.setup(...)
     world.register::<Player>();
     world.register::<BlocksMovement>();
-    world.register::<TriggerActionOnEnter>();
-    world.register::<TriggerActionOnExit>();
-    world.register::<TriggerActionOnUse>();
+    world.register::<GridPosition>();
+    world.register::<SpriteDrawable>();
     world.register::<FacingDirection>();
-    world.register::<Strolling>();
     world.register::<AwaitingInputState>();
-    world.register::<WaitingState>();
-    world.register::<EntityMovingState>();
 
-    // Create entities
+    // Create player entity
     let character_texture = load_texture("assets/texture/walk_cycle.png").await;
     let player_entity = world
         .create_entity()
@@ -89,6 +102,44 @@ async fn main() {
         })
         .with(AwaitingInputState {})
         .build();
+
+    // Insert global resources
+    let map = GameMap::new().await;
+    world.insert(map);
+    world.insert(EventQueue {
+        ..Default::default()
+    });
+    world.insert(PlayerEntity {
+        entity: player_entity,
+    });
+    world.insert(UiState {
+        font_atlas,
+        dialog_box: None,
+    });
+
+    // Dispatcher setup will register all systems and do other setup
+    let mut dispatcher = DispatcherBuilder::new()
+        .with(InputSystem, "input", &[])
+        .with(PlanStrollSystem, "plan_stroll", &[])
+        .with(
+            CharacterMovingSystem,
+            "character_moving",
+            &["input", "plan_stroll"],
+        )
+        .with(ActionSystem, "action", &[])
+        .with(
+            RenderingSystem {
+                ..Default::default()
+            },
+            "rendering",
+            &[],
+        )
+        .with(UiSystem, "ui", &["rendering"])
+        .build();
+    dispatcher.setup(&mut world);
+
+    // Create non-player entities
+
     // Top door
     world
         .create_entity()
@@ -119,7 +170,7 @@ async fn main() {
         .with(GridPosition { x: 10., y: 3. })
         .with(BlocksMovement {})
         .with(TriggerActionOnUse {
-            action: Action::PrintMessage("the urn is full of snakes!".to_owned()),
+            action: Action::ShowDialog("the urn is full of snakes!".to_owned()),
         })
         .build();
     // Standing NPC
@@ -158,52 +209,6 @@ async fn main() {
         })
         .build();
 
-    // Insert global resources
-    let map = GameMap::new().await;
-    world.insert(map);
-    world.insert(EventQueue {
-        ..Default::default()
-    });
-    world.insert(PlayerEntity {
-        entity: player_entity,
-    });
-
-    let mut dispatcher = DispatcherBuilder::new()
-        .with(InputSystem, "input", &[])
-        .with(PlanStrollSystem, "plan_stroll", &[])
-        .with(
-            CharacterMovingSystem,
-            "character_moving",
-            &["input", "plan_stroll"],
-        )
-        .with(ActionSystem, "action", &[])
-        .with(
-            RenderingSystem {
-                ..Default::default()
-            },
-            "rendering",
-            &[],
-        )
-        .build();
-
-    // setup UI style
-    let font_bytes = &include_bytes!("../assets/fonts/Roboto-Bold.ttf")[..];
-    let font_size = 24;
-    let font_atlas =
-        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
-    set_font_atlas(font_atlas);
-    set_ui_style(Style {
-        title_height: 32.,
-        margin: 12.,
-        window_background_focused: Color::from_rgb(0, 0, 150),
-        focused_title: Color::from_rgb(255, 255, 255),
-        focused_text: Color::from_rgb(255, 255, 255),
-        ..Default::default()
-    });
-    // need to create second font_atlas for use below, since above one gets moved into UI code
-    let font_atlas =
-        FontAtlas::new(font_bytes, font_size, FontAtlas::ascii_character_list()).unwrap();
-
     loop {
         clear_background(BLACK);
 
@@ -221,25 +226,6 @@ async fn main() {
         }
         event_queue.events = (*event_queue.new_events).to_vec();
         event_queue.new_events.clear();
-
-        // draw textbox
-        draw_window(
-            hash!(),
-            glam::vec2(10., 500.),
-            glam::vec2(780., 120.),
-            WindowParams {
-                label: "Jude".to_string(),
-                movable: false,
-                titlebar: false,
-                ..Default::default()
-            },
-            |ui| {
-                Label::new(wrap_text("Here is some long text that should go on to the next line. You see, this game is starting to get some story. And here is some more text that should use the last line.", 760., &font_atlas))
-                    .multiline(24.)
-                    .position(None)
-                    .ui(ui);
-            },
-        );
 
         draw_megaui();
 
