@@ -1,6 +1,6 @@
 use crate::actions::Action;
 use crate::constants::*;
-use macroquad::Texture2D;
+use macroquad::texture::Texture2D;
 use specs::Entity;
 use specs::{Component, DenseVecStorage};
 
@@ -16,6 +16,7 @@ pub struct PlayerEntity {
     pub entity: Entity,
 }
 
+// GridPosition is used to place entities on the map, using grid coordinates
 #[derive(Component, Copy, Clone, Debug, PartialEq)]
 pub struct GridPosition {
     pub x: f32,

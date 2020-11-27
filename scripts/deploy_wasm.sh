@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euxo pipefail
+
 if [ -z "$1" ]; then
     echo "Usage: ./scripts/deploy_wasm.sh <deployment_name>"
     exit 1

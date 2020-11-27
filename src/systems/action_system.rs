@@ -7,10 +7,13 @@ use crate::components::TriggerActionOnExit;
 use crate::components::TriggerActionOnUse;
 use crate::events::Event;
 use crate::events::EventQueue;
+use crate::ui::DialogBoxConf;
+use crate::ui::UiState;
 use specs::Join;
 use specs::ReadExpect;
 use specs::ReadStorage;
 use specs::System;
+use specs::WriteExpect;
 use specs::WriteStorage;
 
 pub struct ActionSystem;
@@ -25,6 +28,7 @@ impl<'a> System<'a> for ActionSystem {
         ReadStorage<'a, TriggerActionOnUse>,
         ReadStorage<'a, FacingDirection>,
         WriteStorage<'a, GridPosition>,
+        WriteExpect<'a, UiState>,
     );
 
     // RW: For now, putting all action handling in one system. This will probably change in the future.
@@ -37,6 +41,7 @@ impl<'a> System<'a> for ActionSystem {
             use_triggers,
             facing_directions,
             mut positions,
+            mut ui_state,
         ) = data;
 
         // Process all events, to determine which actions were triggered
@@ -88,6 +93,15 @@ impl<'a> System<'a> for ActionSystem {
                         player_position.x = pos.x;
                         player_position.y = pos.y;
                     }
+                }
+                Action::ShowSimpleDialog(message) => {
+                    ui_state.create_dialog_box(DialogBoxConf {
+                        message,
+                        ..Default::default()
+                    });
+                }
+                Action::ShowDialog(dialog_conf) => {
+                    ui_state.create_dialog_box(dialog_conf);
                 }
                 Action::PrintMessage(message) => {
                     println!("PRINT MESSAGE action: {}", message);

@@ -3,14 +3,16 @@ use crate::AwaitingInputState;
 use crate::Direction;
 use crate::EventQueue;
 use crate::PlayerEntity;
-use macroquad::is_key_down;
-use macroquad::is_key_pressed;
-use miniquad::KeyCode;
+use crate::UiState;
+use macroquad::input::is_key_down;
+use macroquad::input::is_key_pressed;
+use macroquad::prelude::KeyCode;
 use specs::ReadExpect;
 use specs::ReadStorage;
 use specs::System;
 use specs::WriteExpect;
 
+// This InputSystem is used to handle player movement and interaction during gameplay.
 pub struct InputSystem;
 
 impl<'a> System<'a> for InputSystem {
@@ -18,10 +20,16 @@ impl<'a> System<'a> for InputSystem {
         WriteExpect<'a, EventQueue>,
         ReadStorage<'a, AwaitingInputState>,
         ReadExpect<'a, PlayerEntity>,
+        ReadExpect<'a, UiState>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut event_queue, awaiting_input_states, player_entity) = data;
+        let (mut event_queue, awaiting_input_states, player_entity, ui_state) = data;
+
+        // Ignore usual input if the UI System is currently in control (as signaled by UIState)
+        if ui_state.is_engaged() {
+            return;
+        }
 
         if let Some(_player_awaiting_input) = awaiting_input_states.get(player_entity.entity) {
             let mut direction: Option<Direction> = None;

@@ -10,7 +10,7 @@ use crate::events::EventQueue;
 use crate::map::GameMap;
 use crate::util::f32_eq;
 use crate::PlayerEntity;
-use macroquad::get_frame_time;
+use macroquad::prelude::get_frame_time;
 use specs::Entities;
 use specs::Entity;
 use specs::Join;

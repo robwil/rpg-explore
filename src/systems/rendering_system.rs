@@ -7,14 +7,14 @@ use crate::constants::LEVEL_HEIGHT;
 use crate::constants::LEVEL_WIDTH;
 use crate::map::GameMap;
 use core::cmp::Ordering::Equal;
-use macroquad::draw_text;
-use macroquad::draw_texture_ex;
-use macroquad::get_frame_time;
-use macroquad::get_time;
-use macroquad::DrawTextureParams;
-use macroquad::Rect;
-use macroquad::Vec2;
-use macroquad::WHITE;
+use macroquad::prelude::vec2;
+use macroquad::prelude::Rect;
+use macroquad::prelude::WHITE;
+use macroquad::text::draw_text;
+use macroquad::texture::draw_texture_ex;
+use macroquad::texture::DrawTextureParams;
+use macroquad::time::get_frame_time;
+use macroquad::time::get_time;
 use specs::Join;
 use specs::ReadExpect;
 use specs::{ReadStorage, System};
@@ -40,7 +40,11 @@ impl<'a> System<'a> for RenderingSystem {
             self.last_fps = (1. / get_frame_time()).round();
             self.last_fps_time = get_time();
         }
-        draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 20.0, WHITE);
+        draw_text(&format!("FPS: {}", self.last_fps), 20.0, 20.0, 32.0, WHITE);
+
+        // draw controls for now
+        draw_text("WASD - movement", 500., 20., 32., WHITE);
+        draw_text("Space - use/interact", 500., 50., 32., WHITE);
 
         // draw map
         // TODO: instead of constants for the LEVEL_WIDTH/HEIGHT, and hard-coding tilelayer1/tilelayer2,
@@ -79,7 +83,7 @@ impl<'a> System<'a> for RenderingSystem {
                         drawable.tile_width,
                         drawable.tile_height,
                     )),
-                    dest_size: Some(Vec2::new(
+                    dest_size: Some(vec2(
                         drawable.tile_width * GLOBAL_MULTIPLIER,
                         drawable.tile_height * GLOBAL_MULTIPLIER,
                     )),
